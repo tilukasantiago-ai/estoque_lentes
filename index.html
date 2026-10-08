@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estoque Express · Lentes</title>
+<meta name="theme-color" content="#B3121F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23FFC72C'/%3E%3Ccircle cx='32' cy='32' r='21' fill='%23B3121F'/%3E%3Cellipse cx='25' cy='24' rx='7' ry='4' fill='%23fff' opacity='.6'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--red:#B3121F;--red-d:#7E0A14;--red-l:#FBE3E5;--yel:#FFC72C;--yel-d:#E0A800;--yel-l:#FFF4CC;--ink:#2A1A16;--mut:#7A6A62;--bg:#FFF9EF;--card:#fff;--line:#EADFCF;--ok:#2E7D32;--ok-l:#E3F2E4;--r:14px;--sh:0 2px 10px rgba(120,20,20,.08)}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--ink);font-size:15px;min-height:100vh}
+button,input,select,textarea{font-family:inherit;font-size:15px}
+[hidden]{display:none!important}
+code{background:var(--yel-l);padding:1px 5px;border-radius:5px;font-size:13px}
+
+/* ---------- login ---------- */
+#login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 20% 10%,#D3212F 0,#B3121F 40%,#7E0A14 100%)}
+.login-card{background:#fff;border-radius:22px;max-width:400px;width:100%;padding:32px 28px;box-shadow:0 20px 50px rgba(0,0,0,.3);border-top:8px solid var(--yel)}
+.login-card form{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo svg{width:48px;height:48px;flex:none}
+.logo-txt b{display:block;font-size:22px;color:var(--red);line-height:1.1}
+.logo-txt span{font-size:13px;color:var(--mut);font-style:italic}
+.erro-txt{color:var(--red);font-size:14px;margin:0;min-height:1em}
+.aviso-demo{background:var(--yel-l);border-left:5px solid var(--yel-d);padding:10px 12px;border-radius:10px;font-size:14px;margin:0}
+
+/* ---------- layout ---------- */
+#app{display:flex;min-height:100vh}
+#side{width:236px;flex:none;background:linear-gradient(180deg,var(--red) 0,var(--red-d) 100%);color:#fff;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:18px 12px}
+#side .logo-txt b{color:#fff}
+#side .logo-txt span{color:var(--yel)}
+.nav{display:flex;flex-direction:column;gap:4px;margin-top:26px}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;color:#FFE9EB;text-decoration:none;cursor:pointer;transition:background .15s}
+.nav a:hover{background:rgba(255,255,255,.12)}
+.nav a.ativo{background:var(--yel);color:var(--red-d);font-weight:bold;box-shadow:0 3px 0 var(--yel-d)}
+.nav svg,#bottom svg{width:20px;height:20px;flex:none}
+.side-pe{margin-top:auto;font-size:12px;color:#FFD6DA;padding:10px;line-height:1.5}
+.side-pe button{background:none;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:5px 10px;cursor:pointer;margin-top:6px;font-size:13px}
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topo{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:3px solid var(--yel);padding:14px 26px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topo h1{margin:0;font-size:24px;color:var(--red-d);flex:1;min-width:120px}
+.mes{display:flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--line);border-radius:30px;padding:3px}
+.mes button{border:0;background:var(--yel-l);width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--red-d);font-weight:bold}
+.mes span{padding:0 8px;font-weight:bold;min-width:140px;text-align:center;font-size:14px}
+.badge-demo{background:var(--yel);color:var(--red-d);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:bold}
+#view{padding:22px 26px 40px;max-width:1320px;width:100%}
+#bottom{display:none}
+@media(max-width:860px){
+  #side{display:none}
+  #bottom{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--red-d);border-top:3px solid var(--yel);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  #bottom a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;color:#FFD6DA;font-size:10px;text-decoration:none;padding:5px 0;border-radius:10px;min-width:0}
+  #bottom a.ativo{color:var(--red-d);background:var(--yel);font-weight:bold}
+  .topo{padding:10px 12px;gap:8px}
+  .topo h1{font-size:20px}
+  .mes span{min-width:110px;font-size:13px}
+  #view{padding:14px 12px 100px}
+}
+
+/* ---------- cards & grids ---------- */
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.g3,.g2{grid-template-columns:minmax(0,1fr)}}
+.mt{margin-top:16px}
+.card{background:var(--card);border-radius:var(--r);padding:18px;box-shadow:var(--sh);border:1px solid var(--line);min-width:0}
+.card h2{margin:0 0 4px;font-size:18px;color:var(--red-d);display:flex;align-items:center;gap:8px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 14px;font-style:italic}
+.kpi{border-left:6px solid var(--red)}
+.kpi.am{border-left-color:var(--yel)}
+.kpi small{color:var(--mut);display:block;font-size:13px}
+.kpi b{font-size:25px;display:block;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.kpi em{font-size:12px;color:var(--mut)}
+@media(max-width:600px){.kpi b{font-size:20px}}
+.boas{background:linear-gradient(120deg,var(--red),var(--red-d));color:#fff;border:0;margin-bottom:16px}
+.boas h2{color:var(--yel)}
+.boas p{margin:6px 0 14px}
+
+/* ---------- forms ---------- */
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--mut);min-width:0}
+input,select,textarea{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;color:var(--ink);width:100%;min-width:0}
+textarea{resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-l)}
+input[readonly]{background:#F7F2EA}
+.form{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.span2{grid-column:span 2}
+@media(max-width:420px){.span2{grid-column:auto}}
+.qrow{display:flex;gap:6px}
+.qrow input{flex:1}
+.btn{border:0;background:var(--red);color:#fff;padding:11px 18px;border-radius:11px;cursor:pointer;font-weight:bold;box-shadow:0 3px 0 var(--red-d);transition:transform .08s;display:inline-flex;align-items:center;gap:8px;justify-content:center;text-align:center}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--red-d)}
+.btn.am{background:var(--yel);color:var(--red-d);box-shadow:0 3px 0 var(--yel-d)}
+.btn.sec{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
+.btn.perigo{background:#4A0A0F;box-shadow:0 3px 0 #200}
+.btn.peq{padding:6px 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:wait}
+.acoes{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px}
+.barra{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.barra>*{flex:1 1 160px}
+.barra .btn{flex:0 0 auto}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:0 12px;cursor:pointer;font-weight:bold;color:var(--red-d)}
+.chip:hover{background:var(--yel-l)}
+.radios{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.radios label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.radios input{width:auto;margin-top:3px}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.check input{width:auto}
+
+/* ---------- tabelas ---------- */
+.tabela-wrap{overflow:auto;border-radius:12px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:14px;background:#fff}
+th{background:var(--yel-l);color:var(--red-d);text-align:left;padding:10px;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;white-space:nowrap;z-index:1}
+td{padding:9px 10px;border-top:1px solid var(--line);vertical-align:middle}
+tr.click{cursor:pointer}
+tr.click:hover td{background:#FFFBEE}
+tr.estornado td{opacity:.45}
+tr.estornado td:not(:last-child){text-decoration:line-through}
+.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:bold;background:#FFF8E1}
+td select{padding:6px 8px;font-size:13px}
+.hide-m{}
+@media(max-width:700px){.hide-m{display:none}td,th{padding:8px 6px}table{font-size:13px}}
+
+/* ---------- etiquetas ---------- */
+.pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:bold;letter-spacing:.03em;white-space:nowrap}
+.p-ATIVO{background:var(--ok-l);color:var(--ok)}
+.p-INATIVO{background:var(--yel-l);color:#8A5A00}
+.p-DESATIVO{background:#ECECEC;color:#777}
+.p-MISTO{background:#EFE7FF;color:#5B3BA0}
+.p-LENTE{background:var(--red-l);color:var(--red-d)}
+.p-BLOCO{background:#FFE9C7;color:#8A4B00}
+.p-NOVO{background:var(--red);color:#fff}
+.qtd{display:inline-block;min-width:38px;text-align:center;padding:3px 8px;border-radius:8px;font-weight:bold;background:var(--ok-l);color:var(--ok);font-variant-numeric:tabular-nums}
+.qtd.baixo{background:var(--yel);color:var(--red-d)}
+.qtd.zero{background:var(--red);color:#fff}
+.qtd.neg{background:#222;color:var(--yel)}
+
+/* ---------- entrada em massa ---------- */
+.grade-cel{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;max-height:430px;overflow:auto;padding:2px}
+.cel{border:1.5px solid var(--line);border-radius:12px;padding:8px;background:#fff;display:flex;flex-direction:column;gap:4px}
+.cel.tem{border-color:var(--red);background:var(--red-l)}
+.cel b{font-size:14px}
+.cel small{color:var(--mut);font-size:11px}
+.cel input{padding:6px 8px;text-align:center;font-weight:bold}
+
+/* ---------- painel ---------- */
+.linha-b{display:grid;grid-template-columns:minmax(90px,140px) 1fr auto;gap:10px;align-items:center;margin:9px 0;font-size:14px}
+.trilho{height:14px;background:var(--yel-l);border-radius:8px;overflow:hidden}
+.trilho i{display:block;height:100%;background:linear-gradient(90deg,var(--red),#E2343F);border-radius:8px}
+.mov{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px dashed var(--line);font-size:14px}
+.mov:first-child{border-top:0}
+.mov .ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;flex:none;font-weight:bold}
+.mov small{color:var(--mut)}
+.ic.ENTRADA{background:var(--ok-l);color:var(--ok)}
+.ic.SAIDA{background:var(--red-l);color:var(--red)}
+.ic.PERDA{background:#222;color:var(--yel)}
+.ic.AJUSTE{background:var(--yel-l);color:#8A5A00}
+.repor{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px dashed var(--line);font-size:14px}
+.repor:first-child{border-top:0}
+.vazio{text-align:center;color:var(--mut);padding:24px;font-style:italic}
+.alerta{background:var(--red-l);border-left:5px solid var(--red);padding:12px 14px;border-radius:10px;font-size:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.alerta.am{background:var(--yel-l);border-left-color:var(--yel-d)}
+.preco{display:flex;gap:18px;flex-wrap:wrap;background:var(--yel-l);border:1.5px dashed var(--yel-d);border-radius:12px;padding:12px 14px;margin-top:14px}
+.preco small{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.preco b{font-size:18px;color:var(--red-d);font-variant-numeric:tabular-nums}
+
+/* ---------- modal & toast ---------- */
+#modal{position:fixed;inset:0;background:rgba(40,8,10,.55);z-index:100;display:grid;place-items:center;padding:16px}
+.modal-box{background:#fff;border-radius:18px;max-width:580px;width:100%;max-height:92vh;overflow:auto;padding:22px;border-top:6px solid var(--yel)}
+.modal-box h3{margin:0 0 12px;color:var(--red-d);font-size:20px}
+#toasts{position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--ink);color:#fff;padding:12px 16px;border-radius:12px;border-left:6px solid var(--yel);box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:360px;animation:ent .25s}
+.toast.erro{border-left-color:#FF5A66;background:#5A0A10}
+@keyframes ent{from{transform:translateY(-10px);opacity:0}}
+@media(max-width:860px){#toasts{left:12px;right:12px;top:auto;bottom:92px}.toast{max-width:none}}
+
+/* ---------- impressão ---------- */
+#print-area{display:none;color:#000;font-family:Georgia,serif}
+@media print{
+  body{background:#fff}
+  #login,#app,#bottom,#modal,#toasts{display:none!important}
+  #print-area{display:block}
+}
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pa-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:4px solid #B3121F;padding-bottom:8px;margin-bottom:10px}
+.pa-head small{color:#B3121F;font-weight:bold;letter-spacing:.12em;font-size:10px}
+.pa-head h1{margin:2px 0;font-size:20px}
+.pa-head p{margin:0;font-size:11px;color:#333}
+.pa-faixa{width:80px;height:14px;background:linear-gradient(90deg,#B3121F 50%,#FFC72C 50%)}
+.pa-campos{display:flex;gap:22px;font-size:12px;margin:6px 0 10px}
+.pa-campos span{flex:1;border-bottom:1px solid #000;padding-bottom:3px}
+.pa table{width:100%;border-collapse:collapse;font-size:11px;background:#fff}
+.pa th{background:#FFE89A;color:#000;border:1px solid #000;padding:5px;font-size:9.5px;position:static}
+.pa td{border:1px solid #555;padding:3px 6px;height:24px}
+.pa h2{font-size:14px;margin:12px 0 6px;color:#B3121F}
+.pa .bloco{break-inside:avoid;page-break-inside:avoid}
+.pa .duas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pa-nota{font-size:10px;color:#222;margin:6px 0}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section id="login">
+  <div class="login-card">
+    <div class="logo">
+      <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#FFC72C"/><circle cx="32" cy="32" r="21" fill="#B3121F"/><circle cx="32" cy="32" r="13" fill="none" stroke="#FFC72C" stroke-width="2" opacity=".5"/><ellipse cx="25" cy="24" rx="7" ry="4" fill="#fff" opacity=".6"/></svg>
+      <div class="logo-txt"><b>Estoque Express</b><span>Lentes &amp; Blocos</span></div>
+    </div>
+    <form id="f-login">
+      <p id="login-aviso" class="aviso-demo" hidden></p>
+      <label class="f" id="l-email-w">E-mail<input type="email" id="l-email" autocomplete="username"></label>
+      <label class="f" id="l-senha-w">Senha<input type="password" id="l-senha" autocomplete="current-password"></label>
+      <button class="btn" id="l-btn" type="submit">Entrar</button>
+      <p id="login-erro" class="erro-txt"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="app" hidden>
+  <aside id="side">
+    <div class="logo">
+      <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#FFC72C"/><circle cx="32" cy="32" r="21" fill="#7E0A14"/><ellipse cx="25" cy="24" rx="7" ry="4" fill="#fff" opacity=".6"/></svg>
+      <div class="logo-txt"><b>Estoque Express</b><span>Lentes &amp; Blocos</span></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-pe"><span id="side-user"></span><br><button id="side-sair">Sair</button></div>
+  </aside>
+  <main>
+    <header class="topo">
+      <h1 id="titulo">Painel</h1>
+      <span class="badge-demo" id="badge-demo" hidden>DEMONSTRAÇÃO</span>
+      <div class="mes"><button id="mes-ant" title="Mês anterior">‹</button><span id="mes-txt"></span><button id="mes-prox" title="Próximo mês">›</button></div>
+    </header>
+    <div id="view"></div>
+  </main>
+  <nav id="bottom"></nav>
+</div>
+
+<datalist id="dl-linhas"></datalist>
+<div id="modal" hidden></div>
+<div id="toasts"></div>
+<div id="print-area" class="pa"></div>
+
+<script type="module">
+/* =====================================================================
+   1) CONFIGURAÇÃO — cole aqui os dados do seu projeto Firebase
+   (Console do Firebase > Configurações do projeto > Seus apps > Web)
+   Enquanto apiKey estiver vazio, o sistema roda em MODO DEMONSTRAÇÃO
+   (dados ficam só no navegador).
+   ===================================================================== */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAqAurw7SwzFX7ttYPaCpd9jZLN7EVbj0o",
+  authDomain: "estoque-lentes-express.firebaseapp.com",
+  projectId: "estoque-lentes-express",
+  storageBucket: "estoque-lentes-express.firebasestorage.app",
+  messagingSenderId: "810370428938",
+  appId: "1:810370428938:web:2a724560a51564bd8aaff3"
+};
+
+const OTICAS_PADRAO = ["Ótica Express", "Ótica Vila Isa", "Rede Express", "Vision Center"];
+
+// Regras automáticas de status (pela linha do produto). Editáveis em Ajustes.
+// Cada regra casa quando TODAS as palavras dela aparecem no nome da linha.
+const REGRAS_PADRAO = {
+  ativos: [
+    "FILTRO AZUL", "ANTIREFLEXO", "RESINA INCOLOR",
+    "EXCELSIOR TRADICIONAL INCOLOR", "EXCELSIOR TRADICIONAL FOTO",
+    "ESPACE PLUS INCOLOR", "ESPACE PLUS TRANSITIONS",
+    "NOLINE INCOLOR",
+    "PANOPITIK INCOLOR", "AMPLUS INCOLOR", "PANOPITIK FOTO", "AMPLUS FOTO",
+    "BLOCO VISAO SIMPLES"
+  ],
+  inativos: ["CRIZAL", "POLICARBONATO INCOLOR", "POLICARBONATO ANTIREFLEXO", "NOLINE FOTO"]
+};
+
+const MOTIVOS_PERDA = ["Quebra no manuseio", "Defeito de fábrica", "Erro de surfaçagem", "Erro de montagem", "Risco / arranhão", "Grau errado", "Vencido / amarelado", "Outro"];
+const STATUS = ["ATIVO", "INATIVO", "DESATIVO"];
+const STATUS_TXT = { ATIVO: "Ativo — compra pra repor", INATIVO: "Inativo — vende, não repõe", DESATIVO: "Desativo — não acha pra comprar" };
+const MODO_LOCAL = !FIREBASE_CONFIG.apiKey;
+const FM = '"R$" #,##0.00';
+
+/* ===================== utilidades ===================== */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function brl(n) { return (Number(n) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+function num(n) { return (Number(n) || 0).toLocaleString('pt-BR'); }
+function fmtDec(n) { return (Number(n) || 0).toFixed(2).replace('.', ','); }
+function parseNum(v) {
+  if (typeof v === 'number') return v;
+  let s = String(v ?? '').replace(/[^\d,.\-]/g, '');
+  if (!s) return 0;
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  return parseFloat(s) || 0;
+}
+function hoje() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function hojeYM() { return hoje().slice(0, 7); }
+function fmtData(s) { return s ? String(s).split('-').reverse().join('/') : ''; }
+const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+function nomeMes(ym) { const [y, m] = ym.split('-'); return MESES[+m - 1] + ' de ' + y; }
+function proxMes(ym) { let [y, m] = ym.split('-').map(Number); m++; if (m > 12) { m = 1; y++; } return y + '-' + String(m).padStart(2, '0'); }
+function antMes(ym) { let [y, m] = ym.split('-').map(Number); m--; if (m < 1) { m = 12; y--; } return y + '-' + String(m).padStart(2, '0'); }
+function norm(s) {
+  return String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()
+    .replace(/PHOTO/g, 'FOTO').replace(/ANTI[\s\-]*R+EFLEXO/g, 'ANTIREFLEXO')
+    .replace(/[^A-Z0-9+\-.,]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function slug(s) { return norm(s).replace(/,/g, '.').replace(/\+/g, 'P').replace(/-/g, 'M').replace(/[^A-Z0-9.]+/g, '_').replace(/^_+|_+$/g, '') || 'X'; }
+function idItem(linha, grade) { return slug(linha) + '__' + slug(grade || 'UNICO'); }
+function fatiar(a, n) { const r = []; for (let i = 0; i < a.length; i += n) r.push(a.slice(i, i + n)); return r; }
+function opts(lista, sel, labels) { return lista.map(v => `<option value="${esc(v)}" ${v === sel ? 'selected' : ''}>${esc(labels ? labels[v] : v)}</option>`).join(''); }
+function pill(v) { return `<span class="pill p-${esc(v)}">${esc(v)}</span>`; }
+function chaveGrade(g) { return (String(g).replace(/,/g, '.').match(/[+-]?\d+(\.\d+)?/g) || []).map(Number); }
+function cmpGrade(a, b) {
+  const x = chaveGrade(a), y = chaveGrade(b);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] ?? -999) - (y[i] ?? -999); if (d) return d; }
+  return String(a).localeCompare(String(b), 'pt');
+}
+function cmpItem(a, b) { return String(a.linha).localeCompare(String(b.linha), 'pt') || cmpGrade(a.grade, b.grade); }
+function statusPorRegra(linha) {
+  const t = new Set(norm(linha).split(' '));
+  const casa = r => { const ws = norm(r).split(' ').filter(Boolean); return ws.length && ws.every(w => t.has(w)); };
+  if ((S.config.regras?.inativos || []).some(casa)) return 'INATIVO';
+  if ((S.config.regras?.ativos || []).some(casa)) return 'ATIVO';
+  return 'DESATIVO';
+}
+function tipoPorNome(linha, grade) {
+  return /BLOCO|EXCELSIOR|ESPACE|NOLINE|PANOP|AMPLUS|MULTIFOCAL|BIFOCAL/.test(norm(linha)) || /BASE/.test(norm(grade)) ? 'BLOCO' : 'LENTE';
+}
+function separarDescricao(desc) {
+  const s = String(desc ?? '').trim().replace(/\s+/g, ' ');
+  const m = s.match(/\s(BASE\b.*|[+\-]\s?\d+[.,]\d{1,2}.*|0[.,]00\b.*|\d+[.,]\d{2}\s*[x\/].*)$/i);
+  if (m) return { linha: s.slice(0, m.index).trim(), grade: m[1].trim() };
+  return { linha: s, grade: 'ÚNICO' };
+}
+function baixar(blob, nome) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+
+/* ===================== estado ===================== */
+const S = {
+  itens: new Map(), movs: [],
+  config: { oticas: [...OTICAS_PADRAO], minPadrao: 2, regras: { ativos: [...REGRAS_PADRAO.ativos], inativos: [...REGRAS_PADRAO.inativos] }, ultimoBackup: null },
+  mes: hojeYM(), view: 'painel', user: null,
+  filtro: { q: '', tipo: '', status: '', sit: '', lim: 300 },
+  lote: new Map(), entradaLinha: '',
+};
+
+/* ===================== avisos, modal ===================== */
+function toast(msg, tipo = 'ok', ms = 3200) {
+  const t = document.createElement('div'); t.className = 'toast ' + (tipo === 'erro' ? 'erro' : ''); t.textContent = msg;
+  $('#toasts').appendChild(t); setTimeout(() => t.remove(), ms);
+}
+function modal(html, onMount) { const m = $('#modal'); m.innerHTML = `<div class="modal-box">${html}</div>`; m.hidden = false; onMount && onMount(m); }
+function fecharModal() { const m = $('#modal'); m.hidden = true; m.innerHTML = ''; }
+$('#modal').addEventListener('mousedown', e => { if (e.target.id === 'modal') fecharModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden) fecharModal(); });
+function confirmar(msg, okTxt = 'Confirmar', perigo = false) {
+  return new Promise(res => {
+    modal(`<h3>Confirme</h3><p>${msg}</p><div class="acoes"><button class="btn sec" data-r="0">Cancelar</button><button class="btn ${perigo ? 'perigo' : ''}" data-r="1">${okTxt}</button></div>`,
+      m => $$('[data-r]', m).forEach(b => b.onclick = () => { fecharModal(); res(b.dataset.r === '1'); }));
+  });
+}
+async function acao(btn, fn, okMsg) {
+  if (btn) btn.disabled = true;
+  try { await fn(); if (okMsg) toast(okMsg); }
+  catch (e) { console.error(e); toast('Erro: ' + (e.code === 'permission-denied' ? 'sem permissão (confira as regras do Firestore e o e-mail autorizado)' : (e.message || e)), 'erro', 6000); }
+  finally { if (btn) btn.disabled = false; }
+}
+
+/* =====================================================================
+   2) CAMADA DE DADOS — Firebase (produção) ou navegador (demonstração)
+   ===================================================================== */
+let fb = null, unsubs = [], unsubMes = null;
+const LKEY = 'estoqueLentes_v1';
+let LOCAL = { itens: {}, movs: [], config: null }, memOnly = false;
+
+function lerLocal() { try { const t = localStorage.getItem(LKEY); if (t) LOCAL = JSON.parse(t); } catch (e) { memOnly = true; } }
+function gravarLocal() {
+  if (memOnly) return;
+  try { localStorage.setItem(LKEY, JSON.stringify(LOCAL)); } catch (e) { memOnly = true; toast('O navegador não deixou salvar — dados ficam só nesta sessão', 'erro'); }
+}
+function carregarLocal() {
+  lerLocal();
+  S.itens = new Map(Object.entries(LOCAL.itens || {}).map(([k, v]) => [k, { ...v, id: k }]));
+  if (LOCAL.config) S.config = { ...S.config, ...LOCAL.config };
+  ouvirMes(S.mes);
+}
+
+async function iniciarFirebase() {
+  const V = '10.12.2';
+  const [appM, fsM, authM] = await Promise.all([
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`),
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`)
+  ]);
+  const app = appM.initializeApp(FIREBASE_CONFIG);
+  let db;
+  try { db = fsM.initializeFirestore(app, { localCache: fsM.persistentLocalCache({ tabManager: fsM.persistentMultipleTabManager() }) }); }
+  catch (e) { db = fsM.getFirestore(app); }
+  const auth = authM.getAuth(app);
+  fb = { db, auth, fs: fsM, au: authM };
+  authM.onAuthStateChanged(auth, u => u ? entrou(u) : saiu());
+}
+function erroFb(e) { console.error(e); toast('Erro no banco: ' + (e.code === 'permission-denied' ? 'sem permissão — confira as regras do Firestore' : e.message), 'erro', 7000); }
+
+function ouvirTudo() {
+  const { db, fs } = fb;
+  unsubs.push(fs.onSnapshot(fs.collection(db, 'itens'), snap => {
+    snap.docChanges().forEach(ch => { if (ch.type === 'removed') S.itens.delete(ch.doc.id); else S.itens.set(ch.doc.id, { id: ch.doc.id, ...ch.doc.data() }); });
+    dadosMudaram();
+  }, erroFb));
+  unsubs.push(fs.onSnapshot(fs.doc(db, 'config', 'geral'), d => { if (d.exists()) S.config = { ...S.config, ...d.data() }; dadosMudaram(); }, erroFb));
+  ouvirMes(S.mes);
+}
+function ouvirMes(ym) {
+  S.mes = ym;
+  if (MODO_LOCAL) { S.movs = (LOCAL.movs || []).filter(m => String(m.data).startsWith(ym)); dadosMudaram(); return; }
+  if (!fb) return;
+  unsubMes && unsubMes();
+  const { db, fs } = fb;
+  const q = fs.query(fs.collection(db, 'movimentos'), fs.where('data', '>=', ym + '-01'), fs.where('data', '<', proxMes(ym) + '-01'));
+  unsubMes = fs.onSnapshot(q, snap => { S.movs = snap.docs.map(d => ({ id: d.id, ...d.data() })); dadosMudaram(); }, erroFb);
+}
+
+async function salvarItens(lista, onProg) {
+  const agora = Date.now();
+  if (MODO_LOCAL) {
+    lista.forEach(it => { const { id, ...d } = it; LOCAL.itens[id] = { ...(LOCAL.itens[id] || {}), ...d, atualizadoEm: agora }; S.itens.set(id, { ...LOCAL.itens[id], id }); });
+    gravarLocal(); dadosMudaram(); onProg && onProg(lista.length, lista.length); return;
+  }
+  const { db, fs } = fb; let feito = 0;
+  for (const parte of fatiar(lista, 400)) {
+    const b = fs.writeBatch(db);
+    parte.forEach(it => { const { id, ...d } = it; b.set(fs.doc(db, 'itens', id), { ...d, atualizadoEm: agora }, { merge: true }); });
+    await b.commit(); feito += parte.length; onProg && onProg(feito, lista.length);
+  }
+}
+async function excluirItens(ids) {
+  if (MODO_LOCAL) { ids.forEach(id => { delete LOCAL.itens[id]; S.itens.delete(id); }); gravarLocal(); dadosMudaram(); return; }
+  const { db, fs } = fb;
+  for (const parte of fatiar(ids, 400)) { const b = fs.writeBatch(db); parte.forEach(id => b.delete(fs.doc(db, 'itens', id))); await b.commit(); }
+}
+// Registra movimentos e altera o estoque na mesma operação (delta: + entra, − sai)
+async function registrar(movs) {
+  const agora = Date.now();
+  if (MODO_LOCAL) {
+    movs.forEach((m, i) => {
+      const it = LOCAL.itens[m.itemId]; if (it) { it.qtd = (Number(it.qtd) || 0) + m.delta; S.itens.set(m.itemId, { ...it, id: m.itemId }); }
+      LOCAL.movs.push({ ...m, id: 'm' + agora + '_' + i + '_' + Math.random().toString(36).slice(2, 6), criadoEm: agora + i });
+    });
+    gravarLocal(); ouvirMes(S.mes); return;
+  }
+  const { db, fs } = fb;
+  for (const parte of fatiar(movs, 200)) {
+    const b = fs.writeBatch(db);
+    parte.forEach((m, i) => {
+      b.update(fs.doc(db, 'itens', m.itemId), { qtd: fs.increment(m.delta), atualizadoEm: agora });
+      b.set(fs.doc(fs.collection(db, 'movimentos')), { ...m, criadoEm: agora + i });
+    });
+    await b.commit();
+  }
+}
+async function estornar(lista) {
+  lista = lista.filter(m => !m.estornado); if (!lista.length) return;
+  const agora = Date.now();
+  if (MODO_LOCAL) {
+    lista.forEach(m => {
+      const mm = LOCAL.movs.find(x => x.id === m.id); if (mm) { mm.estornado = true; mm.estornadoEm = agora; }
+      const it = LOCAL.itens[m.itemId]; if (it) { it.qtd = (Number(it.qtd) || 0) - m.delta; S.itens.set(m.itemId, { ...it, id: m.itemId }); }
+    });
+    gravarLocal(); ouvirMes(S.mes); return;
+  }
+  const { db, fs } = fb;
+  for (const parte of fatiar(lista, 200)) {
+    const b = fs.writeBatch(db);
+    parte.forEach(m => {
+      b.update(fs.doc(db, 'movimentos', m.id), { estornado: true, estornadoEm: agora });
+      if (S.itens.has(m.itemId)) b.update(fs.doc(db, 'itens', m.itemId), { qtd: fs.increment(-m.delta), atualizadoEm: agora });
+    });
+    await b.commit();
+  }
+}
+async function salvarConfig(parcial) {
+  S.config = { ...S.config, ...parcial };
+  if (MODO_LOCAL) { LOCAL.config = S.config; gravarLocal(); dadosMudaram(); return; }
+  await fb.fs.setDoc(fb.fs.doc(fb.db, 'config', 'geral'), parcial, { merge: true });
+}
+async function todosMovimentos() {
+  if (MODO_LOCAL) return [...(LOCAL.movs || [])];
+  const s = await fb.fs.getDocs(fb.fs.collection(fb.db, 'movimentos'));
+  return s.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+async function restaurarBackup(dados) {
+  if (!dados || dados.app !== 'estoque-lentes' || !Array.isArray(dados.itens)) throw new Error('arquivo não é um backup deste sistema');
+  const movs = dados.movimentos || [];
+  if (MODO_LOCAL) {
+    dados.itens.forEach(it => { const { id, ...d } = it; LOCAL.itens[id] = d; });
+    const ids = new Set(LOCAL.movs.map(m => m.id)); movs.forEach(m => { if (!ids.has(m.id)) LOCAL.movs.push(m); });
+    if (dados.config) LOCAL.config = dados.config;
+    gravarLocal(); carregarLocal(); return;
+  }
+  const { db, fs } = fb;
+  for (const parte of fatiar(dados.itens, 400)) { const b = fs.writeBatch(db); parte.forEach(it => { const { id, ...d } = it; b.set(fs.doc(db, 'itens', id), d); }); await b.commit(); }
+  for (const parte of fatiar(movs, 400)) { const b = fs.writeBatch(db); parte.forEach(m => { const { id, ...d } = m; b.set(fs.doc(db, 'movimentos', id), d); }); await b.commit(); }
+  if (dados.config) await fs.setDoc(fs.doc(db, 'config', 'geral'), dados.config);
+}
+
+/* ===================== login ===================== */
+$('#f-login').addEventListener('submit', async e => {
+  e.preventDefault(); $('#login-erro').textContent = '';
+  if (MODO_LOCAL) { entrou({ email: 'modo demonstração' }); return; }
+  if (!fb) { $('#login-erro').textContent = 'Carregando… tente de novo em instantes.'; return; }
+  const b = $('#l-btn'); b.disabled = true;
+  try { await fb.au.signInWithEmailAndPassword(fb.auth, $('#l-email').value.trim(), $('#l-senha').value); }
+  catch (err) {
+    const c = err.code || '';
+    $('#login-erro').textContent = /invalid|wrong|not-found|credential/.test(c) ? 'E-mail ou senha incorretos.' : c.includes('too-many') ? 'Muitas tentativas. Espere alguns minutos.' : 'Não foi possível entrar: ' + (err.message || c);
+  } finally { b.disabled = false; }
+});
+function entrou(u) {
+  S.user = u; $('#login').hidden = true; $('#app').hidden = false;
+  $('#side-user').textContent = u.email || ''; $('#badge-demo').hidden = !MODO_LOCAL;
+  if (MODO_LOCAL) carregarLocal(); else ouvirTudo();
+  ir((location.hash || '').slice(1) || 'painel');
+}
+async function sair() {
+  if (!MODO_LOCAL && fb) { unsubs.forEach(u => u()); unsubs = []; unsubMes && unsubMes(); unsubMes = null; await fb.au.signOut(fb.auth); }
+  else saiu();
+}
+function saiu() { S.user = null; S.itens = new Map(); S.movs = []; $('#app').hidden = true; $('#login').hidden = false; }
+$('#side-sair').onclick = sair;
+
+/* ===================== navegação ===================== */
+const IC = {
+  painel: '<path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/>',
+  estoque: '<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>',
+  entrada: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>',
+  saida: '<path d="M12 21V9M7 14l5-5 5 5"/><path d="M4 7V4h16v3"/>',
+  perdas: '<path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5v.5"/>',
+  relatorios: '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/>',
+  ajustes: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>'
+};
+const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg>`;
+const NAV = [['painel', 'Painel'], ['estoque', 'Estoque'], ['entrada', 'Entrada'], ['saida', 'Saída'], ['perdas', 'Perdas'], ['relatorios', 'Relatórios'], ['ajustes', 'Ajustes']];
+const TITULOS = { painel: 'Painel', estoque: 'Estoque', entrada: 'Entrada em massa', saida: 'Saídas', perdas: 'Perdas e avarias', relatorios: 'Relatórios e impressão', ajustes: 'Ajustes' };
+function montarNav() {
+  const html = NAV.map(([k, t]) => `<a data-nav="${k}" href="#${k}">${svg(k)}<span>${t}</span></a>`).join('');
+  $('#nav').innerHTML = html; $('#bottom').innerHTML = html;
+  $$('[data-nav]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); ir(a.dataset.nav); }));
+}
+function ir(v) {
+  if (!VIEWS[v]) v = 'painel';
+  S.view = v; history.replaceState(null, '', '#' + v);
+  $$('[data-nav]').forEach(a => a.classList.toggle('ativo', a.dataset.nav === v));
+  $('#titulo').textContent = TITULOS[v];
+  const el = $('#view'); el.innerHTML = '';
+  VIEWS[v].montar(el); VIEWS[v].atualizar && VIEWS[v].atualizar(el);
+  atualizarTopo(); window.scrollTo(0, 0);
+}
+let pend = false;
+function dadosMudaram() {
+  if (pend) return; pend = true;
+  setTimeout(() => { pend = false; if (!S.user) return; const v = VIEWS[S.view]; v && v.atualizar && v.atualizar($('#view')); atualizarTopo(); }, 30);
+}
+let sigLinhas = '';
+function atualizarTopo() {
+  $('#mes-txt').textContent = nomeMes(S.mes);
+  $$('.mes-nome').forEach(e => e.textContent = nomeMes(S.mes));
+  const ls = linhas().map(l => l.linha); const sig = ls.join('|');
+  if (sig !== sigLinhas) { sigLinhas = sig; $('#dl-linhas').innerHTML = ls.map(l => `<option value="${esc(l)}">`).join(''); }
+}
+$('#mes-ant').onclick = () => ouvirMes(antMes(S.mes));
+$('#mes-prox').onclick = () => ouvirMes(proxMes(S.mes));
+
+/* ===================== consultas ===================== */
+function itensOrdenados() { return [...S.itens.values()].sort(cmpItem); }
+function linhas() {
+  const m = new Map();
+  for (const it of S.itens.values()) {
+    let l = m.get(it.linha);
+    if (!l) { l = { linha: it.linha, tipo: it.tipo, sts: new Set(), itens: [], qtd: 0 }; m.set(it.linha, l); }
+    l.itens.push(it); l.sts.add(it.status); l.qtd += Math.max(0, Number(it.qtd) || 0);
+  }
+  return [...m.values()].map(l => ({ ...l, status: l.sts.size > 1 ? 'MISTO' : [...l.sts][0] })).sort((a, b) => a.linha.localeCompare(b.linha, 'pt'));
+}
+function resolverLinha(nome) { const n = norm(nome); for (const it of S.itens.values()) if (norm(it.linha) === n) return it.linha; return String(nome || '').trim().replace(/\s+/g, ' ').toUpperCase(); }
+function gradesDaLinha(nome) { const n = norm(nome); return [...S.itens.values()].filter(i => norm(i.linha) === n).sort((a, b) => cmpGrade(a.grade, b.grade)); }
+function novoItemBase(linha, grade) {
+  const irmao = gradesDaLinha(linha)[0];
+  const status = irmao ? irmao.status : statusPorRegra(linha);
+  return { id: idItem(linha, grade), linha, grade, codigo: '', qtd: 0,
+    tipo: irmao ? irmao.tipo : tipoPorNome(linha, grade), status,
+    custo: irmao ? (+irmao.custo || 0) : 0, venda: irmao ? (+irmao.venda || 0) : 0,
+    min: irmao ? (+irmao.min || 0) : (status === 'ATIVO' ? S.config.minPadrao : 0) };
+}
+function faltando(i) { return i.status === 'ATIVO' && (Number(i.qtd) || 0) < (Number(i.min) || 0); }
+function listaReposicao() { return itensOrdenados().filter(faltando).map(i => ({ ...i, comprar: (+i.min || 0) - (+i.qtd || 0) })); }
+function qtdBadge(i) {
+  const q = Number(i.qtd) || 0;
+  const c = q < 0 ? 'neg' : q === 0 ? 'zero' : faltando(i) ? 'baixo' : '';
+  return `<span class="qtd ${c}">${num(q)}</span>`;
+}
+function movsOrdenados(tipo) {
+  return S.movs.filter(m => !tipo || m.tipo === tipo).sort((a, b) => String(b.data).localeCompare(String(a.data)) || (b.criadoEm || 0) - (a.criadoEm || 0));
+}
+function resumoMes(movs) {
+  const r = { ent: { qtd: 0, custo: 0 }, sai: { qtd: 0, venda: 0, custo: 0 }, per: { qtd: 0, custo: 0 }, otica: {}, motivo: {}, linha: {} };
+  const soma = (obj, k, q, m) => { const o = obj[k] || (obj[k] = { qtd: 0, venda: 0, custo: 0 }); o.qtd += q; o.venda += q * (+m.venda || 0); o.custo += q * (+m.custo || 0); };
+  for (const m of movs) {
+    if (m.estornado) continue; const q = +m.qtd || 0;
+    if (m.tipo === 'ENTRADA') { r.ent.qtd += q; r.ent.custo += q * (+m.custo || 0); }
+    else if (m.tipo === 'SAIDA') { r.sai.qtd += q; r.sai.venda += q * (+m.venda || 0); r.sai.custo += q * (+m.custo || 0); soma(r.otica, m.otica || '—', q, m); soma(r.linha, m.linha, q, m); }
+    else if (m.tipo === 'PERDA') { r.per.qtd += q; r.per.custo += q * (+m.custo || 0); soma(r.motivo, m.motivo || 'Outro', q, m); }
+  }
+  return r;
+}
+function descMov(m) {
+  if (m.tipo === 'SAIDA') return `OS ${esc(m.os || '—')} · ${esc(m.otica || '')}`;
+  if (m.tipo === 'ENTRADA') return `Entrada${m.fornecedor ? ' · ' + esc(m.fornecedor) : ''}${m.nf ? ' · NF ' + esc(m.nf) : ''}`;
+  if (m.tipo === 'PERDA') return `Perda · ${esc(m.motivo || '')}`;
+  return esc(m.obs || 'Ajuste');
+}
+
+/* ===================== campos ligados: linha → grau ===================== */
+function preencherGraus(sel, linha, manter) {
+  const its = gradesDaLinha(linha), atual = manter ? sel.value : '';
+  sel.innerHTML = !linha ? '<option value="">Escolha a linha primeiro</option>'
+    : its.length ? '<option value="">Escolha…</option>' + its.map(i => `<option value="${esc(i.id)}">${esc(i.grade)}  ·  estoque ${num(i.qtd || 0)}</option>`).join('')
+    : '<option value="">Nenhum grau nessa linha</option>';
+  if (atual && its.some(i => i.id === atual)) sel.value = atual;
+}
+
+/* =====================================================================
+   3) TELAS
+   ===================================================================== */
+const VIEWS = {};
+
+/* ---------- PAINEL ---------- */
+VIEWS.painel = {
+  montar() {},
+  atualizar(el) {
+    const its = [...S.itens.values()];
+    let unid = 0, unL = 0, unB = 0, vc = 0, vv = 0; const cont = { ATIVO: 0, INATIVO: 0, DESATIVO: 0 };
+    its.forEach(i => { const q = Math.max(0, +i.qtd || 0); unid += q; if (i.tipo === 'BLOCO') unB += q; else unL += q; vc += q * (+i.custo || 0); vv += q * (+i.venda || 0); cont[i.status] = (cont[i.status] || 0) + 1; });
+    const r = resumoMes(S.movs), rep = listaReposicao();
+    const oticas = Object.entries(r.otica).sort((a, b) => b[1].qtd - a[1].qtd), maxO = Math.max(1, ...oticas.map(o => o[1].qtd));
+    const ub = S.config.ultimoBackup, dias = ub ? Math.floor((new Date(hoje()) - new Date(ub)) / 864e5) : null;
+    const kpi = (t, v, s, c = '') => `<div class="card kpi ${c}"><small>${t}</small><b>${v}</b><em>${s}</em></div>`;
+    const ult = [...S.movs].sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0)).slice(0, 10);
+    el.innerHTML = `
+      ${its.length ? '' : `<div class="card boas"><h2>Bem-vindo ao seu estoque de lentes</h2><p>Comece trazendo o cadastro do MarketUP: em <b>Ajustes → Importar planilha</b> você envia o Excel/CSV e o sistema monta tudo.</p>
+        <div class="acoes" style="justify-content:flex-start"><button class="btn am" id="p-imp">Importar planilha</button>${MODO_LOCAL ? '<button class="btn sec" id="p-ex">Carregar dados de exemplo</button>' : ''}</div></div>`}
+      <div class="grid g4">
+        ${kpi('Itens cadastrados', num(its.length), `${num(cont.ATIVO)} ativos · ${num(cont.INATIVO)} inativos · ${num(cont.DESATIVO)} desativos`)}
+        ${kpi('Unidades em estoque', num(unid), `${num(unL)} lentes · ${num(unB)} blocos`, 'am')}
+        ${kpi('Valor em custo', brl(vc), 'quanto o estoque custou')}
+        ${kpi('Valor em venda', brl(vv), 'potencial de venda', 'am')}
+      </div>
+      <div class="grid g3 mt">
+        ${kpi('Saídas no mês', num(r.sai.qtd) + ' un.', brl(r.sai.venda) + ' em vendas · margem ' + brl(r.sai.venda - r.sai.custo))}
+        ${kpi('Entradas no mês', num(r.ent.qtd) + ' un.', brl(r.ent.custo) + ' em compras', 'am')}
+        ${kpi('Perdas e avarias', num(r.per.qtd) + ' un.', brl(r.per.custo) + ' de prejuízo')}
+      </div>
+      ${dias === null || dias >= 7 ? `<div class="alerta am mt"><span>💾 ${dias === null ? 'Você ainda não fez nenhum backup.' : `Último backup há ${dias} dias.`} Recomendo um por semana.</span><button class="btn am peq" id="p-bkp">Fazer backup agora</button></div>` : ''}
+      <div class="grid g2 mt">
+        <div class="card"><h2>Precisa repor</h2><p class="sub">${rep.length ? `${num(rep.length)} itens ativos abaixo do mínimo · ${num(rep.reduce((s, i) => s + i.comprar, 0))} unidades para comprar` : 'Itens ativos abaixo do mínimo'}</p>
+          ${rep.length ? rep.slice(0, 10).map(i => `<div class="repor"><span><b>${esc(i.linha)}</b> · ${esc(i.grade)}</span><span>${qtdBadge(i)} <small>comprar ${i.comprar}</small></span></div>`).join('') : '<div class="vazio">Tudo em dia por aqui. ✨</div>'}
+          ${rep.length ? `<div class="acoes"><button class="btn sec peq" id="p-ver">Ver todos</button><button class="btn am peq" id="p-imp-rep">Imprimir lista de compra</button></div>` : ''}
+        </div>
+        <div class="card"><h2>Saídas por ótica</h2><p class="sub mes-nome"></p>
+          ${oticas.length ? oticas.map(([o, v]) => `<div class="linha-b"><span>${esc(o)}</span><div class="trilho"><i style="width:${(v.qtd / maxO * 100).toFixed(1)}%"></i></div><b class="n">${num(v.qtd)} un.</b></div>`).join('') : '<div class="vazio">Nenhuma saída neste mês.</div>'}
+        </div>
+      </div>
+      <div class="card mt"><h2>Últimas movimentações</h2><p class="sub mes-nome"></p>
+        ${ult.length ? ult.map(m => `<div class="mov" style="${m.estornado ? 'opacity:.45' : ''}"><div class="ic ${m.tipo}">${m.delta > 0 ? '+' : '−'}</div><div style="flex:1;min-width:0"><b>${esc(m.linha)}</b> · ${esc(m.grade)}<br><small>${descMov(m)}${m.estornado ? ' · ESTORNADO' : ''}</small></div><div class="n"><b>${m.delta > 0 ? '+' : '−'}${num(Math.abs(m.delta))}</b><br><small>${fmtData(m.data)}</small></div></div>`).join('') : '<div class="vazio">Sem movimentações neste mês.</div>'}
+      </div>`;
+    atualizarTopo();
+    const on = (id, fn) => { const b = $('#' + id, el); if (b) b.onclick = fn; };
+    on('p-imp', () => ir('ajustes'));
+    on('p-ex', e => acao(e.target, carregarExemplo, 'Dados de exemplo carregados'));
+    on('p-bkp', e => acao(e.target, gerarBackup));
+    on('p-ver', () => { S.filtro = { ...S.filtro, status: 'ATIVO', sit: 'baixo', q: '', lim: 300 }; ir('estoque'); });
+    on('p-imp-rep', imprimirListaCompra);
+  }
+};
+
+/* ---------- ESTOQUE ---------- */
+VIEWS.estoque = {
+  montar(el) {
+    el.innerHTML = `
+      <div class="barra">
+        <input id="e-q" type="search" placeholder="Buscar linha, grau ou código…">
+        <select id="e-tipo"><option value="">Lentes e blocos</option><option value="LENTE">Só lentes</option><option value="BLOCO">Só blocos</option></select>
+        <select id="e-status"><option value="">Todos os status</option>${opts(STATUS, '', { ATIVO: 'Ativos', INATIVO: 'Inativos', DESATIVO: 'Desativos' })}</select>
+        <select id="e-sit"><option value="">Qualquer quantidade</option><option value="com">Com estoque</option><option value="baixo">Abaixo do mínimo</option><option value="zero">Zerados</option></select>
+        <button class="btn" id="e-novo">+ Novo item</button>
+      </div>
+      <p class="sub" id="e-resumo"></p>
+      <div id="e-tab"></div>`;
+    const f = S.filtro;
+    $('#e-q').value = f.q; $('#e-tipo').value = f.tipo; $('#e-status').value = f.status; $('#e-sit').value = f.sit;
+    const upd = () => { f.q = $('#e-q').value; f.tipo = $('#e-tipo').value; f.status = $('#e-status').value; f.sit = $('#e-sit').value; f.lim = 300; this.atualizar(el); };
+    $('#e-q').addEventListener('input', upd);
+    ['#e-tipo', '#e-status', '#e-sit'].forEach(s => $(s).addEventListener('change', upd));
+    $('#e-novo').onclick = () => abrirItem(null);
+  },
+  atualizar(el) {
+    const f = S.filtro, toks = norm(f.q).replace(/,/g, '.').split(' ').filter(Boolean);
+    const lista = itensOrdenados().filter(i => {
+      if (f.tipo && i.tipo !== f.tipo) return false;
+      if (f.status && i.status !== f.status) return false;
+      const q = +i.qtd || 0;
+      if (f.sit === 'com' && q <= 0) return false;
+      if (f.sit === 'zero' && q > 0) return false;
+      if (f.sit === 'baixo' && !faltando(i)) return false;
+      if (toks.length) { const t = norm(i.linha + ' ' + i.grade + ' ' + (i.codigo || '')).replace(/,/g, '.'); if (!toks.every(k => t.includes(k))) return false; }
+      return true;
+    });
+    const un = lista.reduce((s, i) => s + Math.max(0, +i.qtd || 0), 0);
+    $('#e-resumo', el).textContent = `${num(lista.length)} itens · ${num(un)} unidades · ${brl(lista.reduce((s, i) => s + Math.max(0, +i.qtd || 0) * (+i.custo || 0), 0))} em custo`;
+    const vis = lista.slice(0, f.lim);
+    $('#e-tab', el).innerHTML = lista.length ? `
+      <div class="tabela-wrap"><table>
+        <thead><tr><th>Linha / produto</th><th>Grau / base</th><th class="hide-m">Tipo</th><th>Status</th><th class="n">Qtd</th><th class="n hide-m">Mín.</th><th class="n hide-m">Custo</th><th class="n hide-m">Venda</th></tr></thead>
+        <tbody>${vis.map(i => `<tr class="click" data-id="${esc(i.id)}"><td><b>${esc(i.linha)}</b></td><td>${esc(i.grade)}</td><td class="hide-m">${pill(i.tipo)}</td><td>${pill(i.status)}</td><td class="n">${qtdBadge(i)}</td><td class="n hide-m">${num(i.min || 0)}</td><td class="n hide-m">${brl(i.custo)}</td><td class="n hide-m">${brl(i.venda)}</td></tr>`).join('')}</tbody>
+      </table></div>
+      ${lista.length > vis.length ? `<div class="acoes" style="justify-content:center"><button class="btn sec" id="e-mais">Mostrar mais (${num(lista.length - vis.length)} restantes)</button></div>` : ''}`
+      : `<div class="card vazio">${S.itens.size ? 'Nada encontrado com esses filtros.' : 'Nenhum item cadastrado. Importe a planilha em Ajustes ou clique em “+ Novo item”.'}</div>`;
+    $$('tr[data-id]', el).forEach(tr => tr.onclick = () => abrirItem(tr.dataset.id));
+    const m = $('#e-mais', el); if (m) m.onclick = () => { f.lim += 500; this.atualizar(el); };
+  }
+};
+
+function abrirItem(id) {
+  const it = id ? S.itens.get(id) : null;
+  const v = it || { linha: '', grade: '', tipo: 'LENTE', status: 'ATIVO', codigo: '', qtd: 0, min: S.config.minPadrao, custo: 0, venda: 0 };
+  modal(`<h3>${it ? 'Editar item' : 'Novo item'}</h3>
+    <div class="form">
+      <label class="f span2">Linha / produto<input id="fi-linha" list="dl-linhas" value="${esc(v.linha)}" ${it ? 'readonly' : ''} placeholder="Ex.: LENTE RESINA FILTRO AZUL 1.56"></label>
+      <label class="f">Grau / base<input id="fi-grade" value="${esc(v.grade)}" ${it ? 'readonly' : ''} placeholder="+1.00 -0.50 ou BASE 4"></label>
+      <label class="f">Código (MarketUP)<input id="fi-cod" value="${esc(v.codigo || '')}"></label>
+      <label class="f">Tipo<select id="fi-tipo">${opts(['LENTE', 'BLOCO'], v.tipo)}</select></label>
+      <label class="f span2">Status<select id="fi-status">${opts(STATUS, v.status, STATUS_TXT)}</select></label>
+      <label class="f">Quantidade<input id="fi-qtd" type="number" value="${+v.qtd || 0}"></label>
+      <label class="f">Estoque mínimo<input id="fi-min" type="number" min="0" value="${+v.min || 0}"></label>
+      <label class="f">Preço de custo (R$)<input id="fi-custo" inputmode="decimal" value="${fmtDec(v.custo)}"></label>
+      <label class="f">Preço de venda (R$)<input id="fi-venda" inputmode="decimal" value="${fmtDec(v.venda)}"></label>
+    </div>
+    ${it ? '<p class="sub" style="margin-top:12px">Mudar a quantidade aqui gera um registro de <b>ajuste</b> no histórico.</p>' : ''}
+    <div class="acoes">${it ? '<button class="btn perigo" id="fi-del" style="margin-right:auto">Excluir</button>' : ''}<button class="btn sec" id="fi-x">Cancelar</button><button class="btn" id="fi-ok">Salvar</button></div>`, m => {
+    $('#fi-x', m).onclick = fecharModal;
+    if (!it) $('#fi-linha', m).addEventListener('change', () => {
+      const b = novoItemBase(resolverLinha($('#fi-linha').value), 'X');
+      $('#fi-tipo').value = b.tipo; $('#fi-status').value = b.status; $('#fi-min').value = b.min; $('#fi-custo').value = fmtDec(b.custo); $('#fi-venda').value = fmtDec(b.venda);
+    });
+    $('#fi-ok', m).onclick = e => acao(e.target, async () => {
+      const linha = it ? it.linha : resolverLinha($('#fi-linha').value), grade = it ? it.grade : $('#fi-grade').value.trim().replace(/\s+/g, ' ').toUpperCase();
+      if (!linha || !grade) throw new Error('preencha a linha e o grau/base');
+      const nid = it ? it.id : idItem(linha, grade);
+      if (!it && S.itens.has(nid)) throw new Error('esse item já existe no estoque');
+      const d = { id: nid, linha, grade, codigo: $('#fi-cod').value.trim(), tipo: $('#fi-tipo').value, status: $('#fi-status').value, min: parseInt($('#fi-min').value) || 0, custo: parseNum($('#fi-custo').value), venda: parseNum($('#fi-venda').value) };
+      const nq = parseInt($('#fi-qtd').value) || 0;
+      if (!it) await salvarItens([{ ...d, qtd: nq }]);
+      else {
+        await salvarItens([d]);
+        const delta = nq - (+it.qtd || 0);
+        if (delta) await registrar([{ tipo: 'AJUSTE', itemId: it.id, linha, grade, tipoProd: d.tipo, qtd: Math.abs(delta), delta, custo: d.custo, venda: d.venda, data: hoje(), obs: 'Ajuste manual no cadastro', estornado: false }]);
+      }
+      fecharModal();
+    }, it ? 'Item atualizado' : 'Item cadastrado');
+    const del = $('#fi-del', m);
+    if (del) del.onclick = async () => { if (await confirmar(`Excluir <b>${esc(it.linha)} · ${esc(it.grade)}</b>? O histórico de movimentações continua guardado.`, 'Excluir', true)) acao(null, () => excluirItens([it.id]), 'Item excluído'); };
+  });
+}
+
+/* ---------- ENTRADA EM MASSA ---------- */
+VIEWS.entrada = {
+  montar(el) {
+    el.innerHTML = `
+      <div class="grid g2">
+        <div class="card"><h2>1. Dados da chegada</h2><p class="sub">De onde veio esse lote</p>
+          <div class="form"><label class="f">Data<input type="date" id="en-data" value="${hoje()}"></label><label class="f">Fornecedor<input id="en-forn" placeholder="Ex.: Laboratório X"></label><label class="f">Nota fiscal / pedido<input id="en-nf"></label></div></div>
+        <div class="card"><h2>2. Colar uma lista <small style="font-weight:normal;font-size:13px;color:var(--mut)">(opcional)</small></h2>
+          <p class="sub">Uma por linha: <code>LINHA;GRAU;QTD</code> ou só <code>GRAU QTD</code> (usa a linha escolhida no passo 3). Dá pra colar direto do Excel.</p>
+          <textarea id="en-colar" rows="4" placeholder="LENTE RESINA FILTRO AZUL 1.56;+1.00;4&#10;-0.50 3"></textarea>
+          <div class="acoes"><button class="btn am" id="en-colar-ok">Adicionar ao lote</button></div></div>
+      </div>
+      <div class="card mt"><h2>3. Lançar por linha</h2><p class="sub">Escolha a linha e digite quanto chegou de cada grau/base. <b>Enter</b> pula para o próximo.</p>
+        <div class="barra"><input id="en-linha" list="dl-linhas" placeholder="Digite ou escolha a linha…"><select id="en-filtro"><option value="">Mostrar todos os graus</option><option value="falta">Só os que precisam repor</option></select></div>
+        <div id="en-grade"><div class="vazio">Escolha uma linha acima.</div></div>
+        <div class="barra" style="margin-top:12px"><input id="en-ng" placeholder="Grau/base que ainda não existe (ex.: +4.25 -2.00)"><input id="en-nq" type="number" min="1" placeholder="Qtd" style="max-width:110px"><button class="btn sec" id="en-ng-ok">+ Novo grau</button></div>
+      </div>
+      <div class="card mt"><h2>4. Conferir e confirmar</h2><div id="en-lote"></div></div>
+      <div class="card mt"><h2>Entradas de <span class="mes-nome"></span></h2><div id="en-hist"></div></div>`;
+    const inp = $('#en-linha');
+    inp.value = S.entradaLinha;
+    const trocar = () => { S.entradaLinha = resolverLinha(inp.value); if (inp.value.trim()) inp.value = S.entradaLinha; this.renderGrade(el); };
+    inp.addEventListener('change', trocar);
+    $('#en-filtro').addEventListener('change', () => this.renderGrade(el));
+    $('#en-colar-ok').onclick = () => {
+      const { ok, erros } = parseColar($('#en-colar').value, S.entradaLinha);
+      ok.forEach(x => addLote(x.linha, x.grade, x.qtd));
+      if (ok.length) { $('#en-colar').value = ''; toast(`${ok.length} linhas adicionadas ao lote`); }
+      if (erros.length) toast(`Não entendi as linhas: ${erros.join(', ')}`, 'erro', 6000);
+      this.renderGrade(el); this.renderLote(el);
+    };
+    $('#en-ng-ok').onclick = () => {
+      const g = $('#en-ng').value.trim().replace(/\s+/g, ' ').toUpperCase(), q = parseInt($('#en-nq').value);
+      if (!S.entradaLinha) return toast('Escolha a linha primeiro', 'erro');
+      if (!g || !(q > 0)) return toast('Informe o grau e a quantidade', 'erro');
+      addLote(S.entradaLinha, g, q); $('#en-ng').value = ''; $('#en-nq').value = '';
+      this.renderGrade(el); this.renderLote(el);
+    };
+    if (S.entradaLinha) this.renderGrade(el);
+  },
+  renderGrade(el) {
+    const box = $('#en-grade', el); if (!box) return;
+    if (!S.entradaLinha) { box.innerHTML = '<div class="vazio">Escolha uma linha acima.</div>'; return; }
+    let its = gradesDaLinha(S.entradaLinha);
+    if ($('#en-filtro', el).value === 'falta') its = its.filter(faltando);
+    const aviso = its.length && its[0].status !== 'ATIVO' ? `<div class="alerta am" style="margin-bottom:10px">Atenção: essa linha está como <b>${its[0].status}</b>. Confira se é isso mesmo que chegou.</div>` : '';
+    box.dataset.n = its.length;
+    box.innerHTML = its.length ? aviso + `<div class="grade-cel">${its.map(i => { const v = S.lote.get(i.id)?.qtd || ''; return `<div class="cel ${v ? 'tem' : ''}"><b>${esc(i.grade)}</b><small>Atual: <span data-atual="${esc(i.id)}">${num(i.qtd || 0)}</span>${i.min ? ' · mín ' + i.min : ''}</small><input type="number" min="0" inputmode="numeric" data-id="${esc(i.id)}" value="${v}" placeholder="0"></div>`; }).join('')}</div>`
+      : `<div class="vazio">${gradesDaLinha(S.entradaLinha).length ? 'Nenhum grau precisando de reposição nessa linha.' : 'Linha nova. Use “+ Novo grau” abaixo para criar os graus dela.'}</div>`;
+    const ins = $$('input[data-id]', box);
+    ins.forEach((inp, ix) => {
+      inp.addEventListener('input', () => {
+        const it = S.itens.get(inp.dataset.id), q = parseInt(inp.value) || 0;
+        if (q > 0) S.lote.set(it.id, { id: it.id, linha: it.linha, grade: it.grade, qtd: q }); else S.lote.delete(it.id);
+        inp.closest('.cel').classList.toggle('tem', q > 0); this.renderLote(el);
+      });
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); (ins[ix + 1] || ins[0]).focus(); (ins[ix + 1] || ins[0]).select(); } });
+    });
+  },
+  renderLote(el) {
+    const box = $('#en-lote', el); if (!box) return;
+    const lote = [...S.lote.values()].sort(cmpItem);
+    if (!lote.length) { box.innerHTML = '<div class="vazio">O lote está vazio. Lance quantidades no passo 3 ou cole uma lista.</div>'; return; }
+    let un = 0, ct = 0;
+    const rows = lote.map(x => { const it = S.itens.get(x.id) || novoItemBase(x.linha, x.grade); un += x.qtd; ct += x.qtd * (+it.custo || 0);
+      return `<tr><td><b>${esc(x.linha)}</b></td><td>${esc(x.grade)} ${S.itens.has(x.id) ? '' : pill('NOVO')}</td><td class="hide-m">${pill(it.status)}</td><td class="n">${num(x.qtd)}</td><td class="n hide-m">${brl(it.custo)}</td><td class="n hide-m">${brl(x.qtd * (+it.custo || 0))}</td><td><button class="btn sec peq" data-rm="${esc(x.id)}" title="Tirar do lote">✕</button></td></tr>`; }).join('');
+    box.innerHTML = `<div class="tabela-wrap" style="max-height:380px"><table><thead><tr><th>Linha</th><th>Grau / base</th><th class="hide-m">Status</th><th class="n">Qtd</th><th class="n hide-m">Custo un.</th><th class="n hide-m">Total</th><th></th></tr></thead><tbody>${rows}</tbody>
+      <tfoot><tr><td colspan="3">${lote.length} itens</td><td class="n">${num(un)}</td><td class="hide-m"></td><td class="n hide-m">${brl(ct)}</td><td></td></tr></tfoot></table></div>
+      <div class="acoes"><button class="btn sec" id="en-limpar">Limpar lote</button><button class="btn" id="en-ok">Confirmar entrada de ${num(un)} unidades</button></div>`;
+    $$('[data-rm]', box).forEach(b => b.onclick = () => { S.lote.delete(b.dataset.rm); this.renderGrade(el); this.renderLote(el); });
+    $('#en-limpar', box).onclick = async () => { if (await confirmar('Limpar todo o lote sem lançar?')) { S.lote.clear(); this.renderGrade(el); this.renderLote(el); } };
+    $('#en-ok', box).onclick = e => acao(e.target, async () => {
+      const data = $('#en-data').value || hoje(), forn = $('#en-forn').value.trim(), nf = $('#en-nf').value.trim();
+      const novos = lote.filter(x => !S.itens.has(x.id)).map(x => novoItemBase(x.linha, x.grade));
+      if (novos.length) await salvarItens(novos);
+      const lid = 'L' + Date.now();
+      const movs = lote.map(x => { const it = S.itens.get(x.id) || novoItemBase(x.linha, x.grade);
+        return { tipo: 'ENTRADA', itemId: x.id, linha: it.linha, grade: it.grade, tipoProd: it.tipo, qtd: x.qtd, delta: x.qtd, custo: +it.custo || 0, venda: +it.venda || 0, fornecedor: forn, nf, data, lote: lid, estornado: false }; });
+      await registrar(movs); S.lote.clear(); $('#en-nf').value = '';
+      this.renderGrade(el); this.renderLote(el);
+    }, 'Entrada registrada! Estoque atualizado.');
+  },
+  atualizar(el) {
+    const box = $('#en-grade', el);
+    if (S.entradaLinha && box) {
+      let its = gradesDaLinha(S.entradaLinha); if ($('#en-filtro', el).value === 'falta') its = its.filter(faltando);
+      if (String(its.length) !== box.dataset.n) this.renderGrade(el);
+      else $$('[data-atual]', box).forEach(s => { const it = S.itens.get(s.dataset.atual); if (it) s.textContent = num(it.qtd || 0); });
+    }
+    this.renderLote(el);
+    // histórico agrupado por lote
+    const lotes = new Map();
+    movsOrdenados('ENTRADA').forEach(m => { const k = m.lote || m.id; const l = lotes.get(k) || { k, data: m.data, forn: m.fornecedor, nf: m.nf, movs: [] }; l.movs.push(m); lotes.set(k, l); });
+    const h = $('#en-hist', el);
+    h.innerHTML = lotes.size ? `<div class="tabela-wrap"><table><thead><tr><th>Data</th><th>Fornecedor</th><th class="hide-m">NF</th><th class="n">Itens</th><th class="n">Unid.</th><th class="n hide-m">Custo</th><th></th></tr></thead><tbody>${[...lotes.values()].map(l => {
+      const at = l.movs.filter(m => !m.estornado), est = !at.length;
+      return `<tr class="${est ? 'estornado' : ''}"><td>${fmtData(l.data)}</td><td>${esc(l.forn || '—')}</td><td class="hide-m">${esc(l.nf || '')}</td><td class="n">${l.movs.length}</td><td class="n">${num(l.movs.reduce((s, m) => s + m.qtd, 0))}</td><td class="n hide-m">${brl(l.movs.reduce((s, m) => s + m.qtd * (m.custo || 0), 0))}</td><td>${est ? '<small>estornado</small>' : `<button class="btn sec peq" data-est="${esc(l.k)}">Estornar</button>`}</td></tr>`; }).join('')}</tbody></table></div>` : '<div class="vazio">Nenhuma entrada neste mês.</div>';
+    $$('[data-est]', h).forEach(b => b.onclick = async () => {
+      const l = lotes.get(b.dataset.est);
+      if (await confirmar(`Estornar essa entrada inteira (${l.movs.length} itens)? As quantidades saem do estoque de novo.`, 'Estornar', true)) acao(b, () => estornar(l.movs), 'Entrada estornada');
+    });
+  }
+};
+function addLote(linha, grade, qtd) { const id = idItem(linha, grade); const ex = S.itens.get(id); const cur = S.lote.get(id); S.lote.set(id, { id, linha: ex ? ex.linha : linha, grade: ex ? ex.grade : grade, qtd: (cur?.qtd || 0) + qtd }); }
+function parseColar(txt, linhaPadrao) {
+  const ok = [], erros = [];
+  String(txt || '').split(/\r?\n/).forEach((l, i) => {
+    l = l.trim(); if (!l) return;
+    const p = l.split(/[;\t]/).map(s => s.trim()).filter(Boolean); let linha, grade, q;
+    if (p.length >= 3) [linha, grade, q] = p; else if (p.length === 2) { [grade, q] = p; linha = linhaPadrao; }
+    else { const t = l.split(/\s+/); q = t.pop(); grade = t.join(' '); linha = linhaPadrao; }
+    q = parseInt(q);
+    if (!linha || !grade || !(q > 0)) { erros.push(i + 1); return; }
+    ok.push({ linha: resolverLinha(linha), grade: grade.replace(/\s+/g, ' ').toUpperCase(), qtd: q });
+  });
+  return { ok, erros };
+}
+
+/* ---------- SAÍDA ---------- */
+VIEWS.saida = {
+  montar(el) {
+    el.innerHTML = `
+      <div class="card"><h2>Registrar saída</h2><p class="sub">Os preços de custo e venda vêm sozinhos do cadastro</p>
+        <form id="s-form" class="form" autocomplete="off">
+          <label class="f">Nº da OS<input id="s-os" required placeholder="Ex.: 12345"></label>
+          <label class="f">Data<input type="date" id="s-data" value="${hoje()}" required></label>
+          <label class="f">Ótica<select id="s-otica" required>${opts(S.config.oticas || [], '')}</select></label>
+          <label class="f span2">Produto (linha)<input id="s-linha" list="dl-linhas" required placeholder="Digite ou escolha…"></label>
+          <label class="f">Grau / base<select id="s-grau" required><option value="">Escolha a linha primeiro</option></select></label>
+          <label class="f">Quantidade<span class="qrow"><input type="number" id="s-qtd" min="1" value="1" required><button type="button" class="chip" data-q="1">1</button><button type="button" class="chip" data-q="2">Par</button></span></label>
+        </form>
+        <div class="preco" id="s-preco"></div>
+        <div class="acoes"><button class="btn" type="submit" form="s-form" id="s-ok">Registrar saída</button></div>
+      </div>
+      <div class="card mt"><h2>Saídas de <span class="mes-nome"></span></h2>
+        <div class="barra"><input id="s-busca" type="search" placeholder="Buscar OS ou produto"><select id="s-fot"><option value="">Todas as óticas</option>${opts(S.config.oticas || [], '')}</select></div>
+        <div id="s-lista"></div></div>`;
+    const linha = $('#s-linha'), grau = $('#s-grau');
+    const trocar = () => { if (linha.value.trim()) linha.value = resolverLinha(linha.value); preencherGraus(grau, linha.value, false); this.preco(); };
+    linha.addEventListener('change', trocar);
+    grau.addEventListener('change', () => this.preco());
+    $('#s-qtd').addEventListener('input', () => this.preco());
+    $$('[data-q]', el).forEach(b => b.onclick = () => { $('#s-qtd').value = b.dataset.q; this.preco(); });
+    $('#s-busca').addEventListener('input', () => this.lista(el));
+    $('#s-fot').addEventListener('change', () => this.lista(el));
+    $('#s-form').addEventListener('submit', e => { e.preventDefault(); this.salvar(); });
+    this.preco();
+  },
+  preco() {
+    const it = S.itens.get($('#s-grau').value), q = parseInt($('#s-qtd').value) || 0, b = $('#s-preco');
+    if (!b) return;
+    b.innerHTML = it ? `<div><small>Custo unit.</small><b>${brl(it.custo)}</b></div><div><small>Venda unit.</small><b>${brl(it.venda)}</b></div><div><small>Total venda</small><b>${brl(q * (+it.venda || 0))}</b></div><div><small>Estoque após</small><b>${num((+it.qtd || 0) - q)}</b></div><div><small>Status</small>${pill(it.status)}</div>`
+      : '<div><small>Preços</small><b style="color:var(--mut);font-size:15px">Escolha produto e grau</b></div>';
+  },
+  async salvar() {
+    const it = S.itens.get($('#s-grau').value), q = parseInt($('#s-qtd').value) || 0;
+    const os = $('#s-os').value.trim(), otica = $('#s-otica').value, data = $('#s-data').value || hoje();
+    if (!it) return toast('Escolha o produto e o grau', 'erro');
+    if (q <= 0) return toast('Quantidade inválida', 'erro');
+    if ((+it.qtd || 0) - q < 0 && !await confirmar(`O sistema mostra só <b>${num(it.qtd || 0)}</b> em estoque para ${esc(it.linha)} · ${esc(it.grade)}. Registrar mesmo assim? (o estoque fica negativo até você corrigir)`, 'Registrar assim mesmo')) return;
+    await acao($('#s-ok'), async () => {
+      await registrar([{ tipo: 'SAIDA', itemId: it.id, linha: it.linha, grade: it.grade, tipoProd: it.tipo, qtd: q, delta: -q, custo: +it.custo || 0, venda: +it.venda || 0, os, otica, data, estornado: false }]);
+      if (!data.startsWith(S.mes)) toast('Saída lançada em ' + nomeMes(data.slice(0, 7)) + ' (outro mês)');
+      $('#s-grau').value = ''; $('#s-qtd').value = 1; this.preco(); $('#s-grau').focus();
+    }, `Saída registrada: OS ${os} · ${it.grade}`);
+  },
+  lista(el) {
+    const q = norm($('#s-busca', el).value), fo = $('#s-fot', el).value;
+    const ms = movsOrdenados('SAIDA').filter(m => (!fo || m.otica === fo) && (!q || norm(m.os + ' ' + m.linha + ' ' + m.grade).includes(q)));
+    const at = ms.filter(m => !m.estornado);
+    $('#s-lista', el).innerHTML = ms.length ? `<div class="tabela-wrap" style="max-height:560px"><table><thead><tr><th>Data</th><th>OS</th><th class="hide-m">Ótica</th><th>Produto</th><th>Grau</th><th class="n">Qtd</th><th class="n hide-m">Venda</th><th></th></tr></thead><tbody>${ms.map(m => `<tr class="${m.estornado ? 'estornado' : ''}"><td>${fmtData(m.data).slice(0, 5)}</td><td><b>${esc(m.os)}</b></td><td class="hide-m">${esc(m.otica)}</td><td>${esc(m.linha)}</td><td>${esc(m.grade)}</td><td class="n">${m.qtd}</td><td class="n hide-m">${brl(m.qtd * m.venda)}</td><td>${m.estornado ? '<small>estornado</small>' : `<button class="btn sec peq" data-est="${esc(m.id)}" title="Desfazer saída">↺</button>`}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td colspan="5">${at.length} saídas</td><td class="n">${num(at.reduce((s, m) => s + m.qtd, 0))}</td><td class="n hide-m">${brl(at.reduce((s, m) => s + m.qtd * m.venda, 0))}</td><td></td></tr></tfoot></table></div>` : '<div class="vazio">Nenhuma saída encontrada neste mês.</div>';
+    $$('[data-est]', el).forEach(b => b.onclick = async () => { const m = S.movs.find(x => x.id === b.dataset.est); if (await confirmar(`Desfazer a saída da OS <b>${esc(m.os)}</b> (${esc(m.linha)} · ${esc(m.grade)})? A lente volta para o estoque.`, 'Desfazer', true)) acao(b, () => estornar([m]), 'Saída desfeita'); });
+  },
+  atualizar(el) { const g = $('#s-grau', el); if (g && $('#s-linha', el).value) preencherGraus(g, $('#s-linha', el).value, true); this.preco(); this.lista(el); }
+};
+
+/* ---------- PERDAS ---------- */
+VIEWS.perdas = {
+  montar(el) {
+    el.innerHTML = `
+      <div class="card"><h2>Registrar perda ou avaria</h2><p class="sub">A lente sai do estoque e o custo entra como prejuízo do mês</p>
+        <form id="p-form" class="form" autocomplete="off">
+          <label class="f">Data<input type="date" id="p-data" value="${hoje()}" required></label>
+          <label class="f span2">Produto (linha)<input id="p-linha" list="dl-linhas" required placeholder="Digite ou escolha…"></label>
+          <label class="f">Grau / base<select id="p-grau" required><option value="">Escolha a linha primeiro</option></select></label>
+          <label class="f">Quantidade<input type="number" id="p-qtd" min="1" value="1" required></label>
+          <label class="f">Motivo<select id="p-mot">${opts(MOTIVOS_PERDA, '')}</select></label>
+          <label class="f">OS (se tiver)<input id="p-os"></label>
+          <label class="f span2">Observação<input id="p-obs" placeholder="O que aconteceu?"></label>
+        </form>
+        <div class="acoes"><button class="btn" type="submit" form="p-form" id="p-ok">Registrar perda</button></div>
+      </div>
+      <div class="grid g2 mt">
+        <div class="card"><h2>Perdas por motivo</h2><p class="sub mes-nome"></p><div id="p-mot-res"></div></div>
+        <div class="card"><h2>Resumo</h2><p class="sub mes-nome"></p><div id="p-res"></div></div>
+      </div>
+      <div class="card mt"><h2>Perdas de <span class="mes-nome"></span></h2><div id="p-lista"></div></div>`;
+    const linha = $('#p-linha'), grau = $('#p-grau');
+    linha.addEventListener('change', () => { if (linha.value.trim()) linha.value = resolverLinha(linha.value); preencherGraus(grau, linha.value, false); });
+    $('#p-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const it = S.itens.get(grau.value), q = parseInt($('#p-qtd').value) || 0;
+      if (!it || q <= 0) return toast('Escolha produto, grau e quantidade', 'erro');
+      acao($('#p-ok'), async () => {
+        await registrar([{ tipo: 'PERDA', itemId: it.id, linha: it.linha, grade: it.grade, tipoProd: it.tipo, qtd: q, delta: -q, custo: +it.custo || 0, venda: +it.venda || 0, motivo: $('#p-mot').value, os: $('#p-os').value.trim(), obs: $('#p-obs').value.trim(), data: $('#p-data').value || hoje(), estornado: false }]);
+        grau.value = ''; $('#p-qtd').value = 1; $('#p-obs').value = ''; $('#p-os').value = '';
+      }, 'Perda registrada');
+    });
+  },
+  atualizar(el) {
+    const g = $('#p-grau', el); if (g && $('#p-linha', el).value) preencherGraus(g, $('#p-linha', el).value, true);
+    const r = resumoMes(S.movs), mots = Object.entries(r.motivo).sort((a, b) => b[1].custo - a[1].custo), mx = Math.max(1, ...mots.map(m => m[1].qtd));
+    $('#p-mot-res', el).innerHTML = mots.length ? mots.map(([k, v]) => `<div class="linha-b"><span>${esc(k)}</span><div class="trilho"><i style="width:${(v.qtd / mx * 100).toFixed(1)}%"></i></div><b class="n">${v.qtd} · ${brl(v.custo)}</b></div>`).join('') : '<div class="vazio">Nenhuma perda neste mês. 🙌</div>';
+    $('#p-res', el).innerHTML = `<div class="preco" style="margin:0"><div><small>Unidades perdidas</small><b>${num(r.per.qtd)}</b></div><div><small>Prejuízo (custo)</small><b>${brl(r.per.custo)}</b></div><div><small>% das saídas</small><b>${r.sai.qtd ? (r.per.qtd / r.sai.qtd * 100).toFixed(1).replace('.', ',') + '%' : '—'}</b></div></div>`;
+    const ms = movsOrdenados('PERDA');
+    $('#p-lista', el).innerHTML = ms.length ? `<div class="tabela-wrap"><table><thead><tr><th>Data</th><th>Produto</th><th>Grau</th><th class="n">Qtd</th><th>Motivo</th><th class="hide-m">OS / obs.</th><th class="n hide-m">Custo</th><th></th></tr></thead><tbody>${ms.map(m => `<tr class="${m.estornado ? 'estornado' : ''}"><td>${fmtData(m.data).slice(0, 5)}</td><td>${esc(m.linha)}</td><td>${esc(m.grade)}</td><td class="n">${m.qtd}</td><td>${esc(m.motivo)}</td><td class="hide-m">${esc([m.os, m.obs].filter(Boolean).join(' · '))}</td><td class="n hide-m">${brl(m.qtd * m.custo)}</td><td>${m.estornado ? '<small>estornado</small>' : `<button class="btn sec peq" data-est="${esc(m.id)}">↺</button>`}</td></tr>`).join('')}</tbody></table></div>` : '<div class="vazio">Sem registros.</div>';
+    $$('[data-est]', el).forEach(b => b.onclick = async () => { const m = S.movs.find(x => x.id === b.dataset.est); if (await confirmar('Desfazer essa perda? A quantidade volta ao estoque.', 'Desfazer', true)) acao(b, () => estornar([m]), 'Perda desfeita'); });
+  }
+};
+
+/* ---------- RELATÓRIOS ---------- */
+VIEWS.relatorios = {
+  montar(el) {
+    el.innerHTML = `
+      <div class="grid g2">
+        <div class="card"><h2>📊 Planilha mensal</h2><p class="sub">Excel de <span class="mes-nome"></span> (troque o mês no topo)</p>
+          <p style="font-size:14px;margin-top:0">Abas: <b>Resumo</b>, <b>Estoque atual</b>, <b>Saídas</b>, <b>Saídas por produto</b>, <b>Entradas</b>, <b>Perdas</b> e <b>Ajustes</b>.</p>
+          <div class="acoes"><button class="btn" id="r-mes">Baixar planilha do mês</button></div></div>
+        <div class="card"><h2>📦 Posição do estoque</h2><p class="sub">Tudo o que existe agora, com quantidades e valores</p>
+          <label class="f">Incluir<select id="r-pos-st"><option value="">Todos os itens</option><option value="ATIVO">Só ativos</option><option value="com">Só itens com estoque</option></select></label>
+          <div class="acoes"><button class="btn am" id="r-pos">Baixar Excel</button></div></div>
+        <div class="card"><h2>🛒 Lista de compra</h2><p class="sub">Itens ativos abaixo do mínimo e quanto comprar de cada</p>
+          <div class="acoes"><button class="btn sec" id="r-comp-x">Baixar Excel</button><button class="btn am" id="r-comp-p">Imprimir</button></div></div>
+        <div class="card"><h2>🖨️ Folha de saídas para papel</h2><p class="sub">Para usar quando o estoquista não estiver: anota-se à mão e lança depois</p>
+          <div class="form"><label class="f">Linhas na folha<select id="r-fs-n"><option>20</option><option selected>28</option><option>40</option></select></label>
+          <label class="check" style="align-self:end"><input type="checkbox" id="r-fs-p" checked> Incluir quadro de perdas</label></div>
+          <div class="acoes"><button class="btn" id="r-fs">Imprimir folha</button></div></div>
+        <div class="card"><h2>📋 Folha de contagem</h2><p class="sub">Para conferir o estoque físico, linha por linha</p>
+          <div class="form"><label class="f span2">Linha<select id="r-ct-l"></select></label>
+          <label class="check"><input type="checkbox" id="r-ct-c"> Contagem cega (esconde a qtd do sistema)</label></div>
+          <div class="acoes"><button class="btn" id="r-ct">Imprimir contagem</button></div></div>
+      </div>`;
+    $('#r-mes').onclick = e => acao(e.target, planilhaMensal);
+    $('#r-pos').onclick = e => acao(e.target, () => planilhaPosicao($('#r-pos-st').value));
+    $('#r-comp-x').onclick = e => acao(e.target, planilhaCompra);
+    $('#r-comp-p').onclick = imprimirListaCompra;
+    $('#r-fs').onclick = () => imprimirFolhaSaidas(+$('#r-fs-n').value, $('#r-fs-p').checked);
+    $('#r-ct').onclick = () => imprimirContagem($('#r-ct-l').value, $('#r-ct-c').checked);
+  },
+  atualizar(el) {
+    const s = $('#r-ct-l', el), v = s.value;
+    s.innerHTML = `<option value="__ativas">Todas as linhas ativas</option><option value="__todas">Todas as linhas</option>` + linhas().map(l => `<option value="${esc(l.linha)}">${esc(l.linha)}</option>`).join('');
+    if (v) s.value = v;
+  }
+};
+
+/* ---------- AJUSTES ---------- */
+VIEWS.ajustes = {
+  montar(el) {
+    el.innerHTML = `
+      <div class="card"><h2>⬆️ Importar planilha (MarketUP)</h2><p class="sub">Envie o Excel (.xlsx) ou CSV exportado. Você confere as colunas antes de importar — nada é gravado sem sua confirmação.</p>
+        <input type="file" id="aj-file" accept=".xlsx,.xls,.csv,.ods">
+        <div id="aj-imp"></div></div>
+      <div class="card mt"><h2>🔎 Linhas de produto</h2><p class="sub">Mude o status ou os preços de uma linha inteira de uma vez</p>
+        <div class="barra"><input id="aj-lq" type="search" placeholder="Filtrar linhas…"><button class="btn sec" id="aj-reapl">Reaplicar regras de status</button></div>
+        <div id="aj-linhas"></div></div>
+      <div class="grid g2 mt">
+        <div class="card"><h2>⚙️ Regras automáticas de status</h2><p class="sub">Uma regra por linha. Casa quando todas as palavras aparecem no nome da linha. Inativos são checados primeiro; o que não casar vira <b>Desativo</b>.</p>
+          <div class="form"><label class="f">Ativos<textarea id="aj-ra" rows="9"></textarea></label><label class="f">Inativos<textarea id="aj-ri" rows="9"></textarea></label></div>
+          <div class="acoes"><button class="btn" id="aj-rs">Salvar regras</button></div></div>
+        <div class="card"><h2>🏪 Óticas e padrões</h2><p class="sub">Uma ótica por linha</p>
+          <label class="f">Óticas<textarea id="aj-ot" rows="5"></textarea></label>
+          <label class="f" style="margin-top:12px">Estoque mínimo padrão (itens ativos novos)<input type="number" id="aj-min" min="0"></label>
+          <div class="acoes"><button class="btn" id="aj-os">Salvar</button></div></div>
+      </div>
+      <div class="grid g2 mt">
+        <div class="card"><h2>💾 Backup</h2><p class="sub" id="aj-bk-info"></p>
+          <p style="font-size:14px;margin-top:0">O backup baixa um arquivo com <b>todos</b> os itens, movimentações e configurações. Guarde no Google Drive ou pendrive.</p>
+          <div class="acoes" style="justify-content:flex-start"><button class="btn" id="aj-bk">Baixar backup</button><button class="btn sec" id="aj-rest">Restaurar backup…</button><input type="file" id="aj-rest-f" accept=".json" hidden></div></div>
+        <div class="card"><h2>👤 Conta</h2><p class="sub">${MODO_LOCAL ? 'Modo demonstração — os dados ficam só neste navegador' : 'Conectado ao Firebase'}</p>
+          <p style="font-size:14px">${esc(S.user?.email || '')}</p>
+          <div class="acoes" style="justify-content:flex-start">${MODO_LOCAL ? '<button class="btn sec" id="aj-ex">Carregar exemplo</button><button class="btn perigo" id="aj-zera">Apagar dados da demonstração</button>' : ''}<button class="btn sec" id="aj-sair">Sair</button></div></div>
+      </div>`;
+    const c = S.config;
+    $('#aj-ra').value = (c.regras?.ativos || []).join('\n'); $('#aj-ri').value = (c.regras?.inativos || []).join('\n');
+    $('#aj-ot').value = (c.oticas || []).join('\n'); $('#aj-min').value = c.minPadrao ?? 2;
+    const lst = id => $(id).value.split('\n').map(s => s.trim()).filter(Boolean);
+    $('#aj-rs').onclick = e => acao(e.target, () => salvarConfig({ regras: { ativos: lst('#aj-ra'), inativos: lst('#aj-ri') } }), 'Regras salvas');
+    $('#aj-os').onclick = e => acao(e.target, () => salvarConfig({ oticas: lst('#aj-ot'), minPadrao: parseInt($('#aj-min').value) || 0 }), 'Configurações salvas');
+    $('#aj-reapl').onclick = async e => {
+      const mud = [...S.itens.values()].filter(i => statusPorRegra(i.linha) !== i.status);
+      if (!mud.length) return toast('Todos os itens já estão de acordo com as regras');
+      if (await confirmar(`Isso muda o status de <b>${num(mud.length)}</b> itens conforme as regras salvas. Continuar?`)) acao(e.target, () => salvarItens(mud.map(i => ({ id: i.id, status: statusPorRegra(i.linha) }))), 'Status atualizados');
+    };
+    $('#aj-lq').addEventListener('input', () => this.linhas(el));
+    $('#aj-file').addEventListener('change', e => { const f = e.target.files[0]; if (f) lerImport(f); e.target.value = ''; });
+    $('#aj-bk').onclick = e => acao(e.target, gerarBackup);
+    $('#aj-rest').onclick = () => $('#aj-rest-f').click();
+    $('#aj-rest-f').addEventListener('change', e => {
+      const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = async () => {
+        let d; try { d = JSON.parse(rd.result); } catch (er) { return toast('Arquivo inválido', 'erro'); }
+        if (await confirmar(`Restaurar backup de <b>${esc(d.geradoEm ? new Date(d.geradoEm).toLocaleString('pt-BR') : '?')}</b> com ${num(d.itens?.length)} itens e ${num(d.movimentos?.length)} movimentações? Itens com o mesmo código serão substituídos pela versão do backup.`, 'Restaurar', true))
+          acao(null, () => restaurarBackup(d), 'Backup restaurado');
+      };
+      rd.readAsText(f);
+    });
+    $('#aj-sair').onclick = sair;
+    const ex = $('#aj-ex'); if (ex) ex.onclick = e => acao(e.target, carregarExemplo, 'Dados de exemplo carregados');
+    const z = $('#aj-zera'); if (z) z.onclick = async () => { if (await confirmar('Apagar todos os dados da demonstração deste navegador?', 'Apagar', true)) { LOCAL = { itens: {}, movs: [], config: null }; gravarLocal(); carregarLocal(); toast('Dados apagados'); } };
+    if (IMP) renderImport();
+  },
+  linhas(el) {
+    const q = norm($('#aj-lq', el)?.value || ''), ls = linhas().filter(l => !q || norm(l.linha).includes(q));
+    const box = $('#aj-linhas', el); if (!box) return;
+    box.innerHTML = ls.length ? `<div class="tabela-wrap" style="max-height:480px"><table><thead><tr><th>Linha</th><th class="hide-m">Tipo</th><th class="n">Graus</th><th class="n">Unid.</th><th>Status</th><th></th></tr></thead><tbody>${ls.map(l => `<tr><td><b>${esc(l.linha)}</b></td><td class="hide-m">${pill(l.tipo)}</td><td class="n">${l.itens.length}</td><td class="n">${num(l.qtd)}</td><td><select data-ls="${esc(l.linha)}">${l.status === 'MISTO' ? '<option value="" selected>Misto</option>' : ''}${opts(STATUS, l.status)}</select></td><td><button class="btn sec peq" data-le="${esc(l.linha)}">Editar</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="vazio">Nenhuma linha cadastrada ainda.</div>';
+    $$('[data-ls]', box).forEach(s => s.onchange = () => { if (!s.value) return; const its = gradesDaLinha(s.dataset.ls); acao(null, () => salvarItens(its.map(i => ({ id: i.id, status: s.value }))), `${its.length} itens agora estão ${s.value}`); });
+    $$('[data-le]', box).forEach(b => b.onclick = () => editarLinha(b.dataset.le));
+  },
+  atualizar(el) {
+    this.linhas(el);
+    const ub = S.config.ultimoBackup; const i = $('#aj-bk-info', el); if (i) i.textContent = ub ? 'Último backup: ' + fmtData(ub) : 'Nenhum backup feito ainda';
+  }
+};
+function editarLinha(nome) {
+  const its = gradesDaLinha(nome), p = its[0] || {};
+  modal(`<h3>${esc(nome)}</h3><p class="sub">${its.length} graus nessa linha. Campos em branco não mudam.</p>
+    <div class="form">
+      <label class="f">Tipo<select id="el-tipo"><option value="">— manter —</option>${opts(['LENTE', 'BLOCO'], '')}</select></label>
+      <label class="f">Status<select id="el-st"><option value="">— manter —</option>${opts(STATUS, '', STATUS_TXT)}</select></label>
+      <label class="f">Preço de custo (R$)<input id="el-c" inputmode="decimal" placeholder="atual: ${fmtDec(p.custo)}"></label>
+      <label class="f">Preço de venda (R$)<input id="el-v" inputmode="decimal" placeholder="atual: ${fmtDec(p.venda)}"></label>
+      <label class="f">Estoque mínimo<input id="el-m" type="number" min="0" placeholder="atual: ${p.min ?? 0}"></label>
+    </div>
+    <div class="acoes"><button class="btn sec" id="el-x">Cancelar</button><button class="btn" id="el-ok">Aplicar a ${its.length} itens</button></div>`, m => {
+    $('#el-x', m).onclick = fecharModal;
+    $('#el-ok', m).onclick = e => {
+      const d = {};
+      if ($('#el-tipo').value) d.tipo = $('#el-tipo').value;
+      if ($('#el-st').value) d.status = $('#el-st').value;
+      if ($('#el-c').value.trim()) d.custo = parseNum($('#el-c').value);
+      if ($('#el-v').value.trim()) d.venda = parseNum($('#el-v').value);
+      if ($('#el-m').value.trim()) d.min = parseInt($('#el-m').value) || 0;
+      if (!Object.keys(d).length) return fecharModal();
+      acao(e.target, async () => { await salvarItens(its.map(i => ({ id: i.id, ...d }))); fecharModal(); }, 'Linha atualizada');
+    };
+  });
+}
+
+/* ===================== IMPORTAÇÃO ===================== */
+let IMP = null;
+const CAMPOS_IMPORT = [
+  { k: 'codigo', h: 'Código', dicas: ['CODIGO', 'COD', 'SKU', 'REFERENCIA'] },
+  { k: 'descricao', h: 'Descrição completa (linha + grau juntos)', dicas: ['DESCRICAO', 'PRODUTO', 'NOME'] },
+  { k: 'linha', h: 'Linha / produto (separado)', dicas: ['LINHA', 'FAMILIA', 'GRUPO'] },
+  { k: 'grade', h: 'Grau / base (separado)', dicas: ['GRAU', 'BASE', 'GRADE', 'VARIACAO', 'DIOPTRIA'] },
+  { k: 'min', h: 'Estoque mínimo', dicas: ['MINIMO', 'MIN.'] },
+  { k: 'custo', h: 'Preço de custo', dicas: ['CUSTO', 'COMPRA'] },
+  { k: 'venda', h: 'Preço de venda', dicas: ['VENDA', 'PRECO', 'VALOR'] },
+  { k: 'qtd', h: 'Quantidade em estoque', dicas: ['ESTOQUE', 'QUANTIDADE', 'QTD', 'QTDE', 'SALDO'] },
+  { k: 'tipo', h: 'Tipo (Lente/Bloco)', dicas: ['TIPO'] },
+  { k: 'status', h: 'Status (se quiser usar o da planilha)', dicas: null },
+];
+function lerImport(file) {
+  if (!window.XLSX) return toast('A biblioteca de planilhas não carregou. Confira a internet e recarregue.', 'erro');
+  const rd = new FileReader();
+  rd.onload = e => {
+    try { const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' }); IMP = { wb, aba: wb.SheetNames[0], nome: file.name, modo: 'tudo' }; carregarAba(); }
+    catch (err) { toast('Não consegui ler o arquivo: ' + err.message, 'erro'); }
+  };
+  rd.readAsArrayBuffer(file);
+}
+function carregarAba() {
+  IMP.aoa = XLSX.utils.sheet_to_json(IMP.wb.Sheets[IMP.aba], { header: 1, defval: '', raw: true, blankrows: false });
+  IMP.hdr = Math.max(0, IMP.aoa.findIndex(r => r.filter(c => String(c).trim() !== '').length >= 3));
+  adivinharMapa(); renderImport();
+}
+function adivinharMapa() {
+  const hs = (IMP.aoa[IMP.hdr] || []).map(h => norm(h)), usados = new Set(); IMP.map = {};
+  for (const c of CAMPOS_IMPORT) {
+    if (!c.dicas) continue;
+    const i = hs.findIndex((h, ix) => !usados.has(ix) && h && c.dicas.some(d => h.includes(d)));
+    if (i >= 0) { IMP.map[c.k] = i; usados.add(i); }
+  }
+}
+function processarImport() {
+  const m = IMP.map, out = new Map(); let dup = 0, ign = 0;
+  const vazio = v => v == null || String(v).trim() === '';
+  for (const r of IMP.aoa.slice(IMP.hdr + 1)) {
+    const g = k => m[k] != null ? r[m[k]] : undefined;
+    let linha = g('linha'), grade = g('grade');
+    if ((vazio(linha) || vazio(grade)) && !vazio(g('descricao'))) { const p = separarDescricao(g('descricao')); if (vazio(linha)) linha = p.linha; if (vazio(grade)) grade = p.grade; }
+    linha = String(linha ?? '').trim().replace(/\s+/g, ' ').toUpperCase();
+    grade = String(grade ?? '').trim().replace(/\s+/g, ' ').toUpperCase() || 'ÚNICO';
+    if (!linha) { ign++; continue; }
+    const tR = norm(g('tipo')), sR = norm(g('status'));
+    const it = { id: idItem(linha, grade), linha, grade, codigo: String(g('codigo') ?? '').trim(),
+      tipo: tR.includes('BLOCO') ? 'BLOCO' : tR.includes('LENTE') ? 'LENTE' : tipoPorNome(linha, grade),
+      status: sR.startsWith('DESAT') ? 'DESATIVO' : sR.startsWith('INAT') ? 'INATIVO' : sR.startsWith('ATIV') ? 'ATIVO' : statusPorRegra(linha),
+      qtd: Math.round(parseNum(g('qtd'))), custo: parseNum(g('custo')), venda: parseNum(g('venda')),
+      min: m.min != null ? Math.round(parseNum(g('min'))) : null };
+    if (out.has(it.id)) { dup++; out.get(it.id).qtd += it.qtd; } else out.set(it.id, it);
+  }
+  return { itens: [...out.values()], dup, ign };
+}
+function renderImport() {
+  const box = $('#aj-imp'); if (!box || !IMP) return;
+  const hs = IMP.aoa[IMP.hdr] || [], col = i => String.fromCharCode(65 + (i % 26)) + (i >= 26 ? Math.floor(i / 26) : '');
+  const { itens, dup, ign } = processarImport();
+  const ex = itens.filter(i => S.itens.has(i.id)).length, cont = { ATIVO: 0, INATIVO: 0, DESATIVO: 0 }; itens.forEach(i => cont[i.status]++);
+  box.innerHTML = `<div class="alerta am mt"><span>Arquivo <b>${esc(IMP.nome)}</b> · ${num(IMP.aoa.length)} linhas lidas</span><button class="btn sec peq" id="imp-x">Cancelar</button></div>
+    <div class="form mt">
+      <label class="f">Aba da planilha<select id="imp-aba">${opts(IMP.wb.SheetNames, IMP.aba)}</select></label>
+      <label class="f">Linha do cabeçalho<input type="number" id="imp-hdr" min="1" value="${IMP.hdr + 1}"></label>
+    </div>
+    <h3 style="color:var(--red-d);margin:18px 0 8px;font-size:16px">Qual coluna é o quê?</h3>
+    <p class="sub">Se a planilha tem o nome completo (ex.: "LENTE FILTRO AZUL +1.00 -0.50") numa coluna só, use “Descrição completa” — o sistema separa a linha do grau sozinho. Confira na prévia.</p>
+    <div class="form">${CAMPOS_IMPORT.map(c => `<label class="f">${c.h}<select data-map="${c.k}"><option value="">— não usar —</option>${hs.map((h, i) => `<option value="${i}" ${IMP.map[c.k] === i ? 'selected' : ''}>${col(i)}: ${esc(String(h).slice(0, 40)) || '(sem nome)'}</option>`).join('')}</select></label>`).join('')}</div>
+    <h3 style="color:var(--red-d);margin:18px 0 8px;font-size:16px">Prévia</h3>
+    <p class="sub">${num(itens.length)} itens · ${num(itens.length - ex)} novos · ${num(ex)} já existem · ${num(cont.ATIVO)} ativos, ${num(cont.INATIVO)} inativos, ${num(cont.DESATIVO)} desativos${dup ? ` · ${dup} repetidos (quantidades somadas)` : ''}${ign ? ` · ${ign} linhas sem produto ignoradas` : ''}</p>
+    <div class="tabela-wrap" style="max-height:330px"><table><thead><tr><th>Linha</th><th>Grau / base</th><th class="hide-m">Tipo</th><th>Status</th><th class="n">Qtd</th><th class="n hide-m">Custo</th><th class="n hide-m">Venda</th></tr></thead>
+      <tbody>${itens.slice(0, 12).map(i => `<tr><td>${esc(i.linha)}</td><td>${esc(i.grade)}</td><td class="hide-m">${pill(i.tipo)}</td><td>${pill(i.status)}</td><td class="n">${i.qtd}</td><td class="n hide-m">${brl(i.custo)}</td><td class="n hide-m">${brl(i.venda)}</td></tr>`).join('')}</tbody></table></div>
+    <div class="radios mt"><b style="font-size:14px">Itens que já existem no sistema:</b>
+      <label><input type="radio" name="imp-modo" value="tudo" ${IMP.modo === 'tudo' ? 'checked' : ''}> Atualizar quantidade e preços com os da planilha</label>
+      <label><input type="radio" name="imp-modo" value="precos" ${IMP.modo === 'precos' ? 'checked' : ''}> Atualizar só os preços (mantém as quantidades)</label>
+      <label><input type="radio" name="imp-modo" value="novos" ${IMP.modo === 'novos' ? 'checked' : ''}> Não mexer — importar só os novos</label></div>
+    <div class="acoes"><button class="btn" id="imp-ok" ${itens.length ? '' : 'disabled'}>Importar ${num(itens.length)} itens</button></div>`;
+  $('#imp-x').onclick = () => { IMP = null; box.innerHTML = ''; };
+  $('#imp-aba').onchange = e => { IMP.aba = e.target.value; carregarAba(); };
+  $('#imp-hdr').onchange = e => { IMP.hdr = Math.max(0, (parseInt(e.target.value) || 1) - 1); adivinharMapa(); renderImport(); };
+  $$('[data-map]', box).forEach(s => s.onchange = () => { if (s.value === '') delete IMP.map[s.dataset.map]; else IMP.map[s.dataset.map] = +s.value; renderImport(); });
+  $$('[name=imp-modo]', box).forEach(r => r.onchange = () => IMP.modo = r.value);
+  $('#imp-ok').onclick = e => acao(e.target, async () => {
+    const { itens } = processarImport(), lista = [], modo = IMP.modo;
+    for (const it of itens) {
+      const ex = S.itens.get(it.id);
+      if (!ex) { lista.push({ ...it, min: it.min ?? (it.status === 'ATIVO' ? S.config.minPadrao : 0) }); continue; }
+      if (modo === 'novos') continue;
+      if (modo === 'precos') { lista.push({ id: it.id, custo: it.custo, venda: it.venda }); continue; }
+      const u = { ...it }; if (u.min == null) delete u.min; if (IMP.map.status == null) delete u.status; if (IMP.map.tipo == null) delete u.tipo; if (!u.codigo) delete u.codigo;
+      lista.push(u);
+    }
+    if (!lista.length) { toast('Nada para importar com essa opção'); return; }
+    const btn = e.target;
+    await salvarItens(lista, (f, t) => { btn.textContent = `Gravando… ${Math.round(f / t * 100)}%`; });
+    IMP = null; box.innerHTML = '';
+    toast(`${num(lista.length)} itens importados!`, 'ok', 5000);
+  });
+}
+
+/* ===================== BACKUP ===================== */
+async function gerarBackup() {
+  const movimentos = await todosMovimentos();
+  const dados = { app: 'estoque-lentes', versao: 1, geradoEm: new Date().toISOString(), itens: [...S.itens.values()], movimentos, config: S.config };
+  baixar(new Blob([JSON.stringify(dados)], { type: 'application/json' }), `backup-estoque-lentes-${hoje()}.json`);
+  await salvarConfig({ ultimoBackup: hoje() });
+  toast(`Backup baixado: ${num(dados.itens.length)} itens e ${num(movimentos.length)} movimentações`);
+}
+
+/* ===================== PLANILHAS (Excel) ===================== */
+function folha(cols, rows) {
+  const aoa = [cols.map(c => c.h), ...rows.map(r => cols.map(c => typeof c.k === 'function' ? c.k(r) : (r[c.k] ?? '')))];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = cols.map(c => ({ wch: c.w || 14 }));
+  const rg = XLSX.utils.decode_range(ws['!ref']);
+  cols.forEach((c, ci) => { if (!c.f) return; for (let r = 1; r <= rg.e.r; r++) { const cell = ws[XLSX.utils.encode_cell({ r, c: ci })]; if (cell && cell.t === 'n') cell.z = c.f; } });
+  ws['!autofilter'] = { ref: ws['!ref'] };
+  return ws;
+}
+function precisaXLSX() { if (!window.XLSX) throw new Error('a biblioteca de planilhas não carregou — confira a internet'); }
+const q0 = r => Math.max(0, +r.qtd || 0);
+const C_ITEM = [
+  { h: 'Linha / produto', k: 'linha', w: 40 }, { h: 'Grau / base', k: 'grade', w: 18 }, { h: 'Tipo', k: 'tipo', w: 8 }, { h: 'Status', k: 'status', w: 10 },
+  { h: 'Quantidade', k: r => +r.qtd || 0, w: 11, f: '0' }, { h: 'Mínimo', k: r => +r.min || 0, w: 9, f: '0' },
+  { h: 'Preço de custo', k: r => +r.custo || 0, w: 14, f: FM }, { h: 'Preço de venda', k: r => +r.venda || 0, w: 14, f: FM },
+  { h: 'Total em custo', k: r => q0(r) * (+r.custo || 0), w: 15, f: FM }, { h: 'Total em venda', k: r => q0(r) * (+r.venda || 0), w: 15, f: FM },
+  { h: 'Código', k: 'codigo', w: 12 }];
+const C_MOV_BASE = [{ h: 'Data', k: r => fmtData(r.data), w: 11 }];
+async function planilhaMensal() {
+  precisaXLSX();
+  const movs = S.movs.filter(m => !m.estornado), r = resumoMes(movs), its = itensOrdenados();
+  let un = 0, vc = 0, vv = 0; its.forEach(i => { const q = q0(i); un += q; vc += q * (+i.custo || 0); vv += q * (+i.venda || 0); });
+  const wb = XLSX.utils.book_new();
+  const aoa = [[`RELATÓRIO MENSAL DE ESTOQUE — ${nomeMes(S.mes).toUpperCase()}`], [`Gerado em ${new Date().toLocaleString('pt-BR')}`], [],
+    ['Indicador', 'Quantidade', 'Valor'],
+    ['Entradas (a custo)', r.ent.qtd, r.ent.custo], ['Saídas (a preço de venda)', r.sai.qtd, r.sai.venda], ['Saídas (a custo)', r.sai.qtd, r.sai.custo],
+    ['Margem bruta das saídas', '', r.sai.venda - r.sai.custo], ['Perdas e avarias (a custo)', r.per.qtd, r.per.custo], [],
+    [`Posição do estoque em ${fmtData(hoje())}`, 'Unidades', 'Valor'], ['A preço de custo', un, vc], ['A preço de venda', un, vv], [],
+    ['Saídas por ótica', 'Quantidade', 'Venda', 'Custo'], ...Object.entries(r.otica).sort((a, b) => b[1].qtd - a[1].qtd).map(([k, v]) => [k, v.qtd, v.venda, v.custo]), [],
+    ['Perdas por motivo', 'Quantidade', 'Custo'], ...Object.entries(r.motivo).map(([k, v]) => [k, v.qtd, v.custo])];
+  const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = [{ wch: 36 }, { wch: 14 }, { wch: 16 }, { wch: 16 }];
+  Object.keys(ws).forEach(k => { if (k[0] === '!') return; const c = XLSX.utils.decode_cell(k); if (c.c >= 2 && c.r > 2 && ws[k].t === 'n') ws[k].z = FM; });
+  XLSX.utils.book_append_sheet(wb, ws, 'Resumo');
+  XLSX.utils.book_append_sheet(wb, folha(C_ITEM, its), 'Estoque atual');
+  const ord = t => movs.filter(m => m.tipo === t).sort((a, b) => String(a.data).localeCompare(String(b.data)) || (a.criadoEm || 0) - (b.criadoEm || 0));
+  XLSX.utils.book_append_sheet(wb, folha([...C_MOV_BASE, { h: 'OS', k: 'os', w: 10 }, { h: 'Ótica', k: 'otica', w: 18 }, { h: 'Linha / produto', k: 'linha', w: 38 }, { h: 'Grau / base', k: 'grade', w: 16 }, { h: 'Qtd', k: r => +r.qtd, w: 6, f: '0' }, { h: 'Custo unit.', k: r => +r.custo || 0, w: 12, f: FM }, { h: 'Venda unit.', k: r => +r.venda || 0, w: 12, f: FM }, { h: 'Total custo', k: r => r.qtd * (r.custo || 0), w: 13, f: FM }, { h: 'Total venda', k: r => r.qtd * (r.venda || 0), w: 13, f: FM }], ord('SAIDA')), 'Saídas');
+  XLSX.utils.book_append_sheet(wb, folha([{ h: 'Linha / produto', k: 'k', w: 40 }, { h: 'Qtd vendida', k: 'qtd', w: 12, f: '0' }, { h: 'Total venda', k: 'venda', w: 14, f: FM }, { h: 'Total custo', k: 'custo', w: 14, f: FM }, { h: 'Margem', k: r => r.venda - r.custo, w: 14, f: FM }], Object.entries(r.linha).map(([k, v]) => ({ k, ...v })).sort((a, b) => b.qtd - a.qtd)), 'Saídas por produto');
+  XLSX.utils.book_append_sheet(wb, folha([...C_MOV_BASE, { h: 'Fornecedor', k: 'fornecedor', w: 20 }, { h: 'NF / pedido', k: 'nf', w: 12 }, { h: 'Linha / produto', k: 'linha', w: 38 }, { h: 'Grau / base', k: 'grade', w: 16 }, { h: 'Qtd', k: r => +r.qtd, w: 6, f: '0' }, { h: 'Custo unit.', k: r => +r.custo || 0, w: 12, f: FM }, { h: 'Total', k: r => r.qtd * (r.custo || 0), w: 13, f: FM }], ord('ENTRADA')), 'Entradas');
+  XLSX.utils.book_append_sheet(wb, folha([...C_MOV_BASE, { h: 'Linha / produto', k: 'linha', w: 38 }, { h: 'Grau / base', k: 'grade', w: 16 }, { h: 'Qtd', k: r => +r.qtd, w: 6, f: '0' }, { h: 'Motivo', k: 'motivo', w: 20 }, { h: 'OS', k: 'os', w: 10 }, { h: 'Observação', k: 'obs', w: 30 }, { h: 'Custo total', k: r => r.qtd * (r.custo || 0), w: 13, f: FM }], ord('PERDA')), 'Perdas');
+  XLSX.utils.book_append_sheet(wb, folha([...C_MOV_BASE, { h: 'Linha / produto', k: 'linha', w: 38 }, { h: 'Grau / base', k: 'grade', w: 16 }, { h: 'Ajuste (+/−)', k: r => +r.delta, w: 12, f: '0' }, { h: 'Observação', k: 'obs', w: 30 }], ord('AJUSTE')), 'Ajustes');
+  XLSX.writeFile(wb, `estoque-lentes-${S.mes}.xlsx`);
+}
+async function planilhaPosicao(filtro) {
+  precisaXLSX();
+  const its = itensOrdenados().filter(i => !filtro || (filtro === 'com' ? (+i.qtd || 0) > 0 : i.status === filtro));
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, folha(C_ITEM, its), 'Estoque');
+  XLSX.writeFile(wb, `posicao-estoque-${hoje()}.xlsx`);
+}
+async function planilhaCompra() {
+  precisaXLSX();
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, folha([{ h: 'Linha / produto', k: 'linha', w: 40 }, { h: 'Grau / base', k: 'grade', w: 18 }, { h: 'Atual', k: r => +r.qtd || 0, w: 8, f: '0' }, { h: 'Mínimo', k: r => +r.min || 0, w: 8, f: '0' }, { h: 'Comprar', k: 'comprar', w: 9, f: '0' }, { h: 'Custo unit.', k: r => +r.custo || 0, w: 12, f: FM }, { h: 'Total estimado', k: r => r.comprar * (+r.custo || 0), w: 14, f: FM }], listaReposicao()), 'Comprar');
+  XLSX.writeFile(wb, `lista-de-compra-${hoje()}.xlsx`);
+}
+
+/* ===================== IMPRESSÃO ===================== */
+function imprimir(html, paisagem) {
+  $('#print-area').innerHTML = `<style>@page{size:A4 ${paisagem ? 'landscape' : 'portrait'};margin:10mm}</style>` + html;
+  setTimeout(() => window.print(), 60);
+}
+const cab = (t, s) => `<div class="pa-head"><div><small>ESTOQUE EXPRESS · LENTES &amp; BLOCOS</small><h1>${t}</h1><p>${s}</p></div><div class="pa-faixa"></div></div>`;
+function imprimirFolhaSaidas(n, comPerdas) {
+  const linhasT = Array.from({ length: n }, (_, i) => `<tr><td style="width:26px;text-align:center">${i + 1}</td><td style="width:62px"></td><td style="width:72px"></td><td style="width:120px"></td><td></td><td style="width:120px"></td><td style="width:38px"></td><td style="width:110px"></td><td style="width:44px"></td></tr>`).join('');
+  const perdas = comPerdas ? `<div class="bloco"><h2>Perdas e avarias</h2><table><thead><tr><th style="width:62px">Data</th><th>Produto</th><th style="width:120px">Grau / base</th><th style="width:38px">Qtd</th><th style="width:170px">Motivo</th><th style="width:110px">Responsável</th><th style="width:44px">Lançado</th></tr></thead><tbody>${'<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>'.repeat(5)}</tbody></table></div>` : '';
+  imprimir(`${cab('Folha de Saídas Manual', 'Use quando o estoquista não estiver. Anote cada lente/bloco retirado; depois lance no sistema e marque “Lançado”.')}
+    <div class="pa-campos"><span>Período: ____/____ a ____/____</span><span>Responsável: </span><span>Folha nº: </span></div>
+    <p class="pa-nota"><b>Óticas:</b> ${(S.config.oticas || []).map(esc).join(' · ')} &nbsp;|&nbsp; <b>Par</b> = 2 lentes</p>
+    <table><thead><tr><th>Nº</th><th>Data</th><th>OS</th><th>Ótica</th><th>Produto (lente / bloco)</th><th>Grau / base</th><th>Qtd</th><th>Retirado por</th><th>Lançado</th></tr></thead><tbody>${linhasT}</tbody></table>${perdas}`, true);
+}
+function imprimirContagem(sel, cega) {
+  const ls = linhas().filter(l => sel === '__todas' ? true : sel === '__ativas' ? l.itens.some(i => i.status === 'ATIVO') : l.linha === sel);
+  if (!ls.length) return toast('Nenhuma linha para imprimir', 'erro');
+  const tab = its => `<table><thead><tr><th>Grau / base</th>${cega ? '' : '<th style="width:60px">Sistema</th>'}<th style="width:60px">Contado</th><th style="width:60px">Diferença</th></tr></thead><tbody>${its.map(i => `<tr><td>${esc(i.grade)}</td>${cega ? '' : `<td style="text-align:center">${num(i.qtd || 0)}</td>`}<td></td><td></td></tr>`).join('')}</tbody></table>`;
+  const html = ls.map(l => { const its = [...l.itens].sort((a, b) => cmpGrade(a.grade, b.grade)), meio = Math.ceil(its.length / 2);
+    return `<div class="bloco"><h2>${esc(l.linha)} <small style="color:#555;font-weight:normal">(${its.length} graus)</small></h2>${its.length > 8 ? `<div class="duas">${tab(its.slice(0, meio))}${tab(its.slice(meio))}</div>` : tab(its)}</div>`; }).join('');
+  imprimir(cab('Folha de Contagem de Estoque', `${cega ? 'Contagem cega' : 'Com quantidade do sistema'} · impresso em ${fmtData(hoje())}`) + `<div class="pa-campos"><span>Data da contagem: </span><span>Contado por: </span><span>Conferido por: </span></div>` + html);
+}
+function imprimirListaCompra() {
+  const rep = listaReposicao(); if (!rep.length) return toast('Nada para repor agora 🎉');
+  const tot = rep.reduce((s, i) => s + i.comprar, 0), val = rep.reduce((s, i) => s + i.comprar * (+i.custo || 0), 0);
+  imprimir(cab('Lista de Compra / Reposição', `Itens ativos abaixo do mínimo · ${fmtData(hoje())} · ${num(tot)} unidades · estimativa ${brl(val)}`) +
+    `<table><thead><tr><th>Linha / produto</th><th style="width:130px">Grau / base</th><th style="width:55px">Atual</th><th style="width:55px">Mínimo</th><th style="width:60px">Comprar</th><th style="width:60px">Pedido ✓</th></tr></thead><tbody>${rep.map(i => `<tr><td>${esc(i.linha)}</td><td>${esc(i.grade)}</td><td style="text-align:center">${i.qtd || 0}</td><td style="text-align:center">${i.min}</td><td style="text-align:center"><b>${i.comprar}</b></td><td></td></tr>`).join('')}</tbody></table>`);
+}
+
+/* ===================== DADOS DE EXEMPLO (só demonstração) ===================== */
+async function carregarExemplo() {
+  const lista = [], esf = [];
+  for (let v = -3; v <= 3.001; v += 0.25) esf.push(Math.abs(v) < 0.01 ? '0.00' : (v > 0 ? '+' : '-') + Math.abs(v).toFixed(2));
+  const blocos = []; [2, 4, 6].forEach(b => ['+1.00', '+1.50', '+2.00', '+2.50', '+3.00'].forEach(a => blocos.push(`BASE ${b} ADD ${a}`)));
+  const add = (linha, tipo, custo, venda, grades) => grades.forEach(g => { const status = statusPorRegra(linha);
+    lista.push({ id: idItem(linha, g), linha, grade: g, tipo, status, custo, venda, min: status === 'ATIVO' ? 2 : 0, qtd: Math.floor(Math.random() * 7), codigo: '' }); });
+  add('LENTE RESINA FILTRO AZUL 1.56', 'LENTE', 18, 120, esf);
+  add('LENTE RESINA ANTIREFLEXO 1.56', 'LENTE', 14, 90, esf);
+  add('LENTE RESINA INCOLOR 1.49', 'LENTE', 6, 45, esf);
+  add('LENTE POLICARBONATO INCOLOR', 'LENTE', 20, 140, esf.slice(4, 21));
+  add('LENTE CRIZAL EASY', 'LENTE', 60, 320, esf.slice(6, 19));
+  add('LENTE 1.67 HIGH INDEX', 'LENTE', 45, 260, esf.slice(0, 9));
+  add('BLOCO VISAO SIMPLES', 'BLOCO', 9, 60, ['BASE 4', 'BASE 6', 'BASE 8']);
+  add('BLOCO VISAO SIMPLES FOTO', 'BLOCO', 22, 150, ['BASE 4', 'BASE 6', 'BASE 8']);
+  add('BLOCO EXCELSIOR TRADICIONAL INCOLOR', 'BLOCO', 35, 220, blocos);
+  add('BLOCO ESPACE PLUS INCOLOR', 'BLOCO', 48, 290, blocos);
+  add('BLOCO NOLINE INCOLOR', 'BLOCO', 30, 200, blocos);
+  add('BLOCO NOLINE FOTO', 'BLOCO', 55, 340, blocos.slice(0, 10));
+  add('BLOCO PANOPITIK AMPLUS INCOLOR', 'BLOCO', 40, 250, blocos);
+  await salvarItens(lista);
+  const vendaveis = lista.filter(i => i.qtd > 2), movs = [];
+  const dia = d => S.mes + '-' + String(d).padStart(2, '0');
+  for (let k = 0; k < 24; k++) { const it = vendaveis[Math.floor(Math.random() * vendaveis.length)]; movs.push({ tipo: 'SAIDA', itemId: it.id, linha: it.linha, grade: it.grade, tipoProd: it.tipo, qtd: 1, delta: -1, custo: it.custo, venda: it.venda, os: String(4200 + k), otica: S.config.oticas[k % S.config.oticas.length], data: dia(1 + (k % 7)), estornado: false }); }
+  const it = vendaveis[0]; movs.push({ tipo: 'PERDA', itemId: it.id, linha: it.linha, grade: it.grade, tipoProd: it.tipo, qtd: 1, delta: -1, custo: it.custo, venda: it.venda, motivo: 'Erro de surfaçagem', os: '', obs: 'Exemplo', data: dia(3), estornado: false });
+  await registrar(movs);
+}
+
+/* ===================== INÍCIO ===================== */
+montarNav();
+if (MODO_LOCAL) {
+  const a = $('#login-aviso'); a.hidden = false;
+  a.innerHTML = '<b>Modo demonstração.</b> O Firebase ainda não foi configurado, então os dados ficam só neste navegador. Clique em Entrar para testar.';
+  $('#l-email-w').hidden = true; $('#l-senha-w').hidden = true;
+} else {
+  iniciarFirebase().catch(e => { $('#login-erro').textContent = 'Não foi possível carregar o Firebase: ' + e.message; });
+}
+</script>
+</body>
+</html>
