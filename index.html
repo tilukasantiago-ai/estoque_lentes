@@ -730,6 +730,10 @@ function itemDoGrau(linha, txt) {
 /* ===================== seletor de grau (lente digitada / bloco por botões) ===================== */
 function partesGrade(g) {
   const p = { var: [], add: '', base: '', olho: '' };
+  if (!String(g).includes('·') && /\b(ADD|BASE|OD|OE)\b/.test(norm(g))) { // cadastro sem separadores
+    const b = lerBloco(g), f = v => isNaN(v) ? '' : v.toFixed(2).replace(/\.00$/, '');
+    return { var: [b.var, ...b.nums.map(f)].filter(Boolean).join(' '), add: f(b.add), base: f(b.base), olho: b.olho };
+  }
   String(g).split('·').map(x => x.trim()).filter(Boolean).forEach(x => {
     const n = norm(x);
     if (/^ADD\b/.test(n)) p.add = x.replace(/^ADD\s*/i, '');
@@ -1193,9 +1197,21 @@ function dataCelula(v) {
 function numSolto(x) { let v = parseFloat(String(x).replace(',', '.')); const dg = String(x).replace(/[+-]/, ''); if (!/[.,]/.test(x) && (dg.length >= 3 || Math.abs(v) > 20 || (dg.length === 2 && dg[0] === '0'))) v = v / 100; return v; }
 const igual = (a, b) => Math.abs(a - b) < 0.001;
 // Bloco: entende "ADD 200 BASE 4 OD", "200 4 OE", "+2.00 · BASE 6 · PAR"…
+// Lê o grau de um bloco do cadastro em qualquer formato: "ADD 3.00 · BASE 4 · OD", "ADD 300 BASE 4 OD", "BASE 4 ADD +3,00 - OE"…
+function lerBloco(g) {
+  let n = ' ' + norm(g).replace(/\b(ADICAO|ADIC|AD)\b/g, 'ADD').replace(/(^|\s)[-–·](?=\s|$)/g, ' ') + ' ';
+  const p = { add: NaN, base: NaN, olho: '', nums: [], var: '' };
+  n = n.replace(/\bADD\s*([+-]?\d+(?:[.,]\d+)?)/, (_, x) => { p.add = numSolto(x); return ' '; });
+  n = n.replace(/\bBASE\s*([+-]?\d+(?:[.,]\d+)?)/, (_, x) => { p.base = numSolto(x); return ' '; });
+  n = n.replace(/ (OD|OE) /, (_, o) => { p.olho = o; return ' '; });
+  p.nums = (n.match(/[+-]?\d+(?:[.,]\d+)?/g) || []).map(numSolto);
+  p.var = n.replace(/[+-]?\d+(?:[.,]\d+)?/g, ' ').split(/\s+/).filter(w => /^[A-Z]{2,}$/.test(w) && w !== 'ADD' && w !== 'BASE').join(' ');
+  return p;
+}
 function itemBlocoTexto(linha, txt) {
-  const its = gradesDaLinha(linha).map(i => ({ i, p: partesGrade(i.grade) }));
+  const its = gradesDaLinha(linha).map(i => ({ i, p: lerBloco(i.grade) }));
   const temOlho = its.some(x => x.p.olho);
+  const linhaTemAdd = its.some(x => !isNaN(x.p.add)), linhaTemBase = its.some(x => !isNaN(x.p.base));
   let t = ' ' + norm(txt).replace(/\b(ADICAO|ADICOES|ADIC|AD)\b/g, 'ADD').replace(/(^|\s)[-–](?=\s|$)/g, ' ') + ' ', olho = '';
   if (/ (PAR|AMBOS|AO|OD E OE|OD OE|OE OD) /.test(t)) olho = 'PAR'; else if (/ OD /.test(t)) olho = 'OD'; else if (/ OE /.test(t)) olho = 'OE';
   t = t.replace(/ (PAR|AMBOS|AO|OD|OE|E) /g, ' ').replace(/ (PAR|AMBOS|AO|OD|OE|E) /g, ' ');
@@ -1203,16 +1219,25 @@ function itemBlocoTexto(linha, txt) {
   t = t.replace(/\bADD\s*([+-]?\d+(?:[.,]\d+)?)/, (_, n) => { kAdd = numSolto(n); return ' '; }).replace(/\bBASE\s*([+-]?\d+(?:[.,]\d+)?)/, (_, n) => { kBase = numSolto(n); return ' '; });
   const soltos = (t.match(/[+-]?\d+(?:[.,]\d+)?/g) || []).map(numSolto);
   const palavras = t.replace(/[+-]?\d+(?:[.,]\d+)?/g, ' ').split(/\s+/).filter(w => /^[A-Z]{2,}$/.test(w) && w !== 'ADD' && w !== 'BASE');
+  // se a linha inteira não tem base (ou adição) no cadastro, essa informação da planilha é ignorada
+  if (!linhaTemBase) kBase = null;
+  if (!linhaTemAdd && kAdd != null) { soltos.push(kAdd); kAdd = null; }
   let c = its.filter(({ p }) => {
-    const add = parseFloat(String(p.add).replace(',', '.')), base = parseFloat(String(p.base).replace(',', '.'));
+    const add = p.add, base = p.base;
     if (kAdd != null && !igual(add, kAdd)) return false;
     if (kBase != null && !igual(base, kBase)) return false;
-    const resto = []; if (kAdd == null && !isNaN(add)) resto.push(add); if (kBase == null && !isNaN(base)) resto.push(base);
+    const resto = [...p.nums]; if (kAdd == null && !isNaN(add)) resto.push(add); if (kBase == null && !isNaN(base)) resto.push(base);
     for (const v of soltos) { const ix = resto.findIndex(r => igual(r, v)); if (ix < 0) return false; resto.splice(ix, 1); }
     const vw = norm(p.var).split(' ');
     return palavras.every(w => vw.includes(w));
   });
-  if (!c.length) return { erro: 'esse grau/adição não existe nessa linha' };
+  if (!c.length) {
+    const fmt = v => (Math.round(v * 100) / 100).toFixed(2).replace(/\.00$/, '');
+    const pedido = [kAdd != null ? 'ADD ' + fmt(kAdd) : '', kBase != null ? 'BASE ' + fmt(kBase) : '', ...soltos.map(fmt)].filter(Boolean).join(' ');
+    const mesmaAdd = kAdd != null ? its.filter(x => igual(x.p.add, kAdd)) : [];
+    const ex = (mesmaAdd.length ? mesmaAdd : its).slice(0, 3).map(x => x.i.grade).join(' | ');
+    return { erro: `${pedido || 'esse bloco'} não existe nessa linha — ${mesmaAdd.length ? 'com essa adição o cadastro tem' : 'no cadastro está assim'}: ${ex}` };
+  }
   const lista = arr => arr.slice(0, 4).map(x => x.i.grade).join(' | ') + (arr.length > 4 ? ' …' : '');
   if (temOlho && olho && olho !== 'PAR') c = c.filter(x => x.p.olho === olho);
   else if (temOlho && olho === 'PAR') {
@@ -1223,7 +1248,7 @@ function itemBlocoTexto(linha, txt) {
   }
   if (c.length === 1) return { itens: [c[0].i] };
   if (!c.length) return { erro: `não existe esse bloco no olho ${olho}` };
-  const semOlho = c.map(x => ({ ...x, k: x.p.var + '|' + x.p.add + '|' + x.p.base }));
+  const semOlho = c.map(x => ({ ...x, k: x.p.var + '|' + x.p.add + '|' + x.p.base + '|' + x.p.nums.join(',') }));
   if (temOlho && !olho && new Set(semOlho.map(x => x.k)).size === 1) {
     const od = c.filter(x => x.p.olho === 'OD'), oe = c.filter(x => x.p.olho === 'OE');
     if (od.length === 1 && oe.length === 1) return { itens: [od[0].i, oe[0].i], par: true, porOlho: true }; // sem olho: quantidade par = metade em cada olho
