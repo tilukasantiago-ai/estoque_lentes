@@ -1315,6 +1315,14 @@ const LOTE = {
         const s = String(L.produto).match(/^(.*?)\s((?:ADD|BASE|[+-]?\d).*)$/i);
         if (s) { const l2 = acharLinha(s[1]); if (!l2.erro) { lp = l2; grauTxt = s[2]; } }
       }
+      if (lp.erro) { // ex.: "SOLAR MARROM DEGRADE" → produto SOLAR DEGRADE, cor MARROM vai para o grau
+        const tk = tokProd(L.produto);
+        for (let i = 0; i < tk.length && lp.erro; i++) {
+          if (!/^[A-Z]{3,}$/.test(tk[i])) continue;
+          const l2 = acharLinha(tk.filter((_, k) => k !== i).join(' '));
+          if (!l2.erro && itemDoTexto(l2.linha, tk[i] + ' ' + grauTxt).itens) { lp = l2; grauTxt = tk[i] + ' ' + grauTxt; }
+        }
+      }
       if (lp.erro) L.erros.push(lp.erro);
       else {
         L.linha = lp.linha;
@@ -1339,6 +1347,7 @@ const LOTE = {
           if (depois < 0) L.avisos.push(`estoque insuficiente de ${it.grade} (tem ${num(Math.max(0, atual))})`);
         });
       }
+      L.avisos = [...new Set(L.avisos)];
       L.sit = L.erros.length ? 'er' : L.avisos.some(a => !a.startsWith('sem data')) ? 'av' : 'ok';
       L.incluir = L.sit === 'ok';
       linhas.push(L);
