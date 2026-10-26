@@ -1196,7 +1196,7 @@ const igual = (a, b) => Math.abs(a - b) < 0.001;
 function itemBlocoTexto(linha, txt) {
   const its = gradesDaLinha(linha).map(i => ({ i, p: partesGrade(i.grade) }));
   const temOlho = its.some(x => x.p.olho);
-  let t = ' ' + norm(txt) + ' ', olho = '';
+  let t = ' ' + norm(txt).replace(/\b(ADICAO|ADICOES|ADIC|AD)\b/g, 'ADD').replace(/(^|\s)[-–](?=\s|$)/g, ' ') + ' ', olho = '';
   if (/ (PAR|AMBOS|AO|OD E OE|OD OE|OE OD) /.test(t)) olho = 'PAR'; else if (/ OD /.test(t)) olho = 'OD'; else if (/ OE /.test(t)) olho = 'OE';
   t = t.replace(/ (PAR|AMBOS|AO|OD|OE|E) /g, ' ').replace(/ (PAR|AMBOS|AO|OD|OE|E) /g, ' ');
   let kAdd = null, kBase = null;
@@ -1217,14 +1217,18 @@ function itemBlocoTexto(linha, txt) {
   if (temOlho && olho && olho !== 'PAR') c = c.filter(x => x.p.olho === olho);
   else if (temOlho && olho === 'PAR') {
     const od = c.filter(x => x.p.olho === 'OD'), oe = c.filter(x => x.p.olho === 'OE');
-    if (od.length === 1 && oe.length === 1) return { itens: [od[0].i, oe[0].i], par: true };
+    if (od.length === 1 && oe.length === 1) return { itens: [od[0].i, oe[0].i], par: true, porOlho: true, parEscrito: true };
     if (!od.length || !oe.length) return { erro: 'não existe o par (OD e OE) desse bloco' };
     return { erro: 'mais de um bloco serve: ' + lista(c) + ' — complete adição/base' };
   }
   if (c.length === 1) return { itens: [c[0].i] };
   if (!c.length) return { erro: `não existe esse bloco no olho ${olho}` };
   const semOlho = c.map(x => ({ ...x, k: x.p.var + '|' + x.p.add + '|' + x.p.base }));
-  if (temOlho && !olho && new Set(semOlho.map(x => x.k)).size === 1) return { erro: 'falta o olho: escreva OD, OE ou PAR' };
+  if (temOlho && !olho && new Set(semOlho.map(x => x.k)).size === 1) {
+    const od = c.filter(x => x.p.olho === 'OD'), oe = c.filter(x => x.p.olho === 'OE');
+    if (od.length === 1 && oe.length === 1) return { itens: [od[0].i, oe[0].i], par: true, porOlho: true }; // sem olho: quantidade par = metade em cada olho
+    return { erro: 'falta o olho: escreva OD, OE ou PAR' };
+  }
   return { erro: 'mais de um bloco serve: ' + lista(c) + ' — complete adição/base' };
 }
 function itemDoTexto(linha, txt) {
@@ -1232,10 +1236,16 @@ function itemDoTexto(linha, txt) {
   if (!its.length) return { erro: 'linha sem graus cadastrados' };
   if (linhaEhBloco(linha)) { if (!txt) return { erro: 'falta adição/base/olho do bloco' }; return itemBlocoTexto(linha, txt); }
   if (!txt) return its.length === 1 ? { itens: [its[0]] } : { erro: 'falta o grau' };
-  const limpo = (' ' + txt + ' ').replace(/\s(OD|OE|PAR|AMBOS)\s/gi, ' ').trim();
-  const it = itemDoGrau(linha, limpo); if (it) return { itens: [it] };
-  const ent = grauEntendido(limpo);
-  return { erro: ent ? `grau ${ent} não existe nessa linha` : 'não entendi o grau' };
+  const partes = txt.replace(/[()\[\]]/g, ' ').split(/\/|;|\|/).map(x => (' ' + x + ' ').replace(/\s(OD|OE|PAR|AMBOS)\s/gi, ' ').trim()).filter(Boolean);
+  if (partes.length > 2) return { erro: 'mais de dois graus na mesma célula' };
+  const achados = [];
+  for (const g of partes) {
+    const it = itemDoGrau(linha, g);
+    if (!it) { const ent = grauEntendido(g); return { erro: ent ? `grau ${ent} não existe nessa linha${partes.length > 1 ? ' (' + (achados.length ? 'OE' : 'OD') + ')' : ''}` : 'não entendi o grau' }; }
+    achados.push(it);
+  }
+  if (achados.length === 2 && achados[0].id !== achados[1].id) return { itens: achados, porOlho: true };
+  return { itens: [achados[0]] };
 }
 
 const COLS_LOTE = [['os', '🔢 OS', w => w.includes('OS')], ['produto', '📦 PRODUTO', w => w.includes('PRODUTO')], ['grau', '🔍 GRAU (LENTE) / ADIÇÃO', w => w.includes('GRAU') || w.includes('ADICAO')],
@@ -1309,14 +1319,22 @@ const LOTE = {
       else {
         L.linha = lp.linha;
         const r = itemDoTexto(lp.linha, grauTxt);
-        if (r.erro) L.erros.push(r.erro); else { L.itens = r.itens; L.par = !!r.par; }
+        if (r.erro) L.erros.push(r.erro);
+        else {
+          L.itens = r.itens; L.par = !!r.par; L.qtdItem = L.qtd;
+          if (r.porOlho && L.qtd != null) {
+            if (L.qtd % 2 === 0) L.qtdItem = L.qtd / 2;
+            else if (L.qtd === 1 && r.parEscrito) L.qtdItem = 1;
+            else { L.erros.push(L.par && !r.parEscrito ? 'falta o olho: quantidade ímpar — escreva OD ou OE' : 'quantidade ímpar para os dois olhos'); L.itens = []; }
+          }
+        }
       }
       if (!L.erros.length) {
         L.itens.forEach(it => {
           const k = norm(L.os) + '|' + it.id;
           if (jaLancado.has(k)) L.avisos.push(`a OS ${L.os} já tem saída de ${it.grade} neste mês`);
           if (vistos.has(k)) L.avisos.push(`repetida na planilha (linha ${vistos.get(k)})`); else vistos.set(k, L.n);
-          const atual = saldo.has(it.id) ? saldo.get(it.id) : (+it.qtd || 0), depois = atual - L.qtd;
+          const atual = saldo.has(it.id) ? saldo.get(it.id) : (+it.qtd || 0), depois = atual - L.qtdItem;
           saldo.set(it.id, depois);
           if (depois < 0) L.avisos.push(`estoque insuficiente de ${it.grade} (tem ${num(Math.max(0, atual))})`);
         });
@@ -1334,7 +1352,7 @@ const LOTE = {
     const box = $('#l-prev', this.box); if (!box) return;
     const st = this.st; if (!st) { box.innerHTML = ''; return; }
     const L = st.linhas, cont = s => L.filter(x => x.sit === s).length, sel = L.filter(x => x.incluir && x.sit !== 'er');
-    const unid = sel.reduce((s, x) => s + x.qtd * x.itens.length, 0), venda = sel.reduce((s, x) => s + x.itens.reduce((a, i) => a + x.qtd * (+i.venda || 0), 0), 0);
+    const unid = sel.reduce((s, x) => s + x.qtdItem * x.itens.length, 0), venda = sel.reduce((s, x) => s + x.itens.reduce((a, i) => a + x.qtdItem * (+i.venda || 0), 0), 0);
     const fora = L.filter(x => !x.incluir || x.sit === 'er');
     const grau = x => x.itens.length ? x.itens.map(i => esc(i.grade)).join('<br>') : esc(x.grau);
     box.innerHTML = `
@@ -1347,8 +1365,8 @@ const LOTE = {
           <td>${x.sit === 'er' ? '✖' : st.feito ? (x.feito ? '✔' : '—') : `<input type="checkbox" data-i="${i}" ${x.incluir ? 'checked' : ''}>`}</td>
           <td class="n hide-m">${x.n}</td><td><b>${esc(x.os || '—')}</b></td>
           <td>${situacaoHtml(x, true)}${x.linha ? esc(x.linha) + (norm(x.linha) !== norm(x.produto) ? `<br><small class="mut">escrito: ${esc(x.produto)}</small>` : '') : esc(x.produto || '—')}</td>
-          <td>${grau(x)}${x.par ? ' <small class="mut">(par)</small>' : ''}${x.itens.length && x.grau && norm(x.grau) !== norm(x.itens[0].grade) ? `<br><small class="mut">escrito: ${esc(x.grau)}</small>` : ''}</td>
-          <td class="n">${esc(x.qtd ?? x.qtdTxt)}${x.itens.length > 1 ? '<small class="mut"> cada</small>' : ''}</td>
+          <td>${grau(x)}${x.itens.length > 1 ? ' <small class="mut">(OD + OE)</small>' : ''}${x.itens.length && x.grau && norm(x.grau) !== norm(x.itens[0].grade) ? `<br><small class="mut">escrito: ${esc(x.grau)}</small>` : ''}</td>
+          <td class="n">${esc(x.qtd ?? x.qtdTxt)}${x.itens.length > 1 ? `<br><small class="mut">${x.qtdItem} em cada olho</small>` : ''}</td>
           <td class="hide-m">${esc(x.otica || x.oticaTxt || '—')}</td><td class="hide-m">${x.data ? fmtData(x.data) : esc(x.dataBruta)}</td>
           <td class="sit hide-m">${situacaoHtml(x)}</td></tr>`).join('')}
       </tbody></table></div>
@@ -1365,10 +1383,10 @@ const LOTE = {
   },
   async baixar() {
     const st = this.st, sel = st.linhas.filter(x => x.incluir && x.sit !== 'er'); if (!sel.length) return;
-    const unid = sel.reduce((s, x) => s + x.qtd * x.itens.length, 0);
+    const unid = sel.reduce((s, x) => s + x.qtdItem * x.itens.length, 0);
     if (!await confirmar(`Dar baixa em <b>${sel.length} linhas</b> (${num(unid)} unidades) da planilha <b>${esc(st.nome)}</b>?<br><small>Se algo sair errado, dá para desfazer o lote inteiro depois.</small>`, 'Dar baixa')) return;
     const lote = 'L' + Date.now(), movs = [];
-    sel.forEach(x => x.itens.forEach(it => movs.push({ tipo: 'SAIDA', itemId: it.id, linha: it.linha, grade: it.grade, tipoProd: it.tipo, qtd: x.qtd, delta: -x.qtd, custo: +it.custo || 0, venda: +it.venda || 0, os: x.os, otica: x.otica, data: x.data, estornado: false, lote, loteArq: st.nome })));
+    sel.forEach(x => x.itens.forEach(it => movs.push({ tipo: 'SAIDA', itemId: it.id, linha: it.linha, grade: it.grade, tipoProd: it.tipo, qtd: x.qtdItem, delta: -x.qtdItem, custo: +it.custo || 0, venda: +it.venda || 0, os: x.os, otica: x.otica, data: x.data, estornado: false, lote, loteArq: st.nome })));
     await acao($('#l-ok', this.box), async () => {
       await registrar(movs);
       sel.forEach(x => x.feito = true); st.feito = { n: sel.length, u: unid, lote };
